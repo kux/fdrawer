@@ -45,7 +45,7 @@ public class ParserTest {
 		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("x", Double.valueOf(2));
 		walker.setMemory(memory);
-		Assert.assertEquals(20.964872, walker.entry(), 0.1);
+		Assert.assertEquals( 0.636657076, walker.entry(), 0.1);
 	}
 
 	@Test
