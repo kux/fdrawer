@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JPanel;
 
@@ -23,9 +24,26 @@ public class FunctionPane extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private HashMap<String,Double> memory = new HashMap<String,Double>();
+	private double t;
+	private Eval eval;
 
-	public FunctionPane(BorderLayout borderLayout) {
+	public FunctionPane(BorderLayout borderLayout, String function) throws RecognitionException{
+		
 		super(borderLayout);
+		
+		ANTLRStringStream input = new ANTLRStringStream(function);
+		
+		ExprLexer lexer = new ExprLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		ExprParser parser = new ExprParser(tokens);
+		ExprParser.entry_return r = parser.entry();
+		CommonTree tree = (CommonTree) r.getTree();
+		BufferedTreeNodeStream bTree = new BufferedTreeNodeStream(tree);
+		eval = new Eval(bTree);
+		
+		eval.setMemory(memory);
+						
 		Thread time = new Thread(new Runnable(){
 			@Override
 			public void run() {
@@ -48,8 +66,7 @@ public class FunctionPane extends JPanel {
 	private synchronized void syncRepaint(){
 		repaint();
 	}
-
-	private double t = 1;
+	
 	
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -57,26 +74,27 @@ public class FunctionPane extends JPanel {
 	
 		g.setColor(Color.blue);
 
-		Eval eval = initEvaluator();
-		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("t", Double.valueOf(t));
+		
+		int widht = this.getWidth();
+		
 		try {
-			double start = -5;
-			double end = 5;
-			double inc = (end-start)/800; //inc = 0.02 
+			double start = -10;
+			double end = 10;
+			double inc = (end-start)/widht; //inc = 0.02 
 
+			int height = this.getHeight();
 
 			int i1 = 0; int j1 = 0;
-			for (int i = 0; i < 800; ++i) {
+			for (int i = 0; i < widht; ++i) {
 				
 				double x = start+i*inc;				
 				memory.put("x", Double.valueOf(x));
-				eval.setMemory(memory);
-
+				
 				eval.reset();
 				double y = eval.entry();
 				
-				int j = 300 + (int)(y/inc);
+				int j = height/2 + (int)(y/inc);
 				if(i1!=0&&j1!=0&&(Math.abs(i-i1)<300)&&(Math.abs(j-j1)<300))g.drawLine(i1, j1, i, j);
 		
 				i1 = i;
@@ -90,30 +108,6 @@ public class FunctionPane extends JPanel {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-	}
-
-	private Eval initEvaluator() {
-		Eval eval = null;
-
-		try {
-			ANTLRStringStream input = new ANTLRStringStream("cos(x/2+(cos t*1.3)/2)/cos(x) + 1/(x*(cos(t/5)+1))");
-			
-			ExprLexer lexer = new ExprLexer(input);
-			CommonTokenStream tokens = new CommonTokenStream(lexer);
-			ExprParser parser = new ExprParser(tokens);
-			ExprParser.entry_return r = parser.entry();
-			CommonTree t = (CommonTree) r.getTree();
-			BufferedTreeNodeStream nodes = new BufferedTreeNodeStream(t);
-			eval = new Eval(nodes);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}finally{
-
-		}
-
-		return eval;
 
 	}
 

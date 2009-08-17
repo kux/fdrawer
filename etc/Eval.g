@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 @members {
 /** Map variable name to Integer object holding value */
-	private HashMap<String, Double> memory = new HashMap();
+	private HashMap<String, Double> memory = new HashMap<String,Double>();
 	
 	public HashMap<String, Double> getMemory(){
 		return memory;

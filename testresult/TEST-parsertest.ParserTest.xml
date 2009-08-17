@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="0" hostname="kux-desktop" name="parsertest.ParserTest" tests="6" time="0.16" timestamp="2009-08-17T18:29:56">
+<testsuite errors="0" failures="0" hostname="kux-desktop" name="parsertest.ParserTest" tests="6" time="0.188" timestamp="2009-08-17T21:22:54">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment" />
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-6-sun-1.6.0.14/jre/lib/i386" />
@@ -73,11 +73,11 @@
     <property name="sun.desktop" value="gnome" />
     <property name="sun.cpu.isalist" value="" />
   </properties>
-  <testcase classname="parsertest.ParserTest" name="basicTest" time="0.101" />
+  <testcase classname="parsertest.ParserTest" name="basicTest" time="0.122" />
   <testcase classname="parsertest.ParserTest" name="withFloat" time="0.0010" />
   <testcase classname="parsertest.ParserTest" name="withUnary" time="0.0010" />
   <testcase classname="parsertest.ParserTest" name="unaryNoPar" time="0.0010" />
-  <testcase classname="parsertest.ParserTest" name="unaryMinus" time="0.0020" />
+  <testcase classname="parsertest.ParserTest" name="unaryMinus" time="0.0010" />
   <testcase classname="parsertest.ParserTest" name="unaryMinusNoPar" time="0.0010" />
   <system-out><![CDATA[(/ (cos x) (cos (* 2 x)))
 (+ (+ 1.3 (* 1.01 2)) (* a 3.3))

@@ -1,4 +1,4 @@
-// $ANTLR 3.1.3 Mar 18, 2009 10:09:25 /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g 2009-08-17 21:29:53
+// $ANTLR 3.1.3 Mar 18, 2009 10:09:25 /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g 2009-08-18 00:22:51
 
 package parser;
 import java.util.HashMap;
@@ -47,7 +47,7 @@ public class Eval extends TreeParser {
 
 
     /** Map variable name to Integer object holding value */
-    	private HashMap<String, Double> memory = new HashMap();
+    	private HashMap<String, Double> memory = new HashMap<String,Double>();
     	
     	public HashMap<String, Double> getMemory(){
     		return memory;
