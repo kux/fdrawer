@@ -1,12 +1,13 @@
 <project name="Function Drawer" default="build" basedir=".">
 
-	<property name="src.dir" value="src" />
-	<property name="build.dir" value="build" />
-	<property name="lib.dir" value="lib" />
-	<property name="etc.dir" value="etc" />
-	<property name="test.dir" value="test" />
+	<property name="src.dir" location="src" />
+	<property name="build.dir" location="build" />
+	<property name="lib.dir" location="lib" />
+	<property name="etc.dir" location="etc" />
+	<property name="test.dir" location="test" />
 	<property name="grammar.file" value="${etc.dir}/Expr.g" />
 	<property name="eval.file" value="${etc.dir}/Eval.g" />
+	<property name="reports.tests" value="testresult" />
 
 
 	<target name="parser" depends="clean.parser" description="Generate java lexer and parser from ANTLR grammar file">
@@ -68,11 +69,11 @@
 	</target>
 
 	<target name="test" depends="compile.tests" description="Run all unit tests">
-		<junit printsummary="true" haltonfailure="true">
+		<junit printsummary="true" haltonfailure="true" >
 			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false" />
 			<formatter type="xml" />
-			<batchtest>
+			<batchtest todir="${reports.tests}">
 				<fileset dir="${build.dir}/test" includes="**/*Test.class" />
 			</batchtest>
 		</junit>

@@ -1,4 +1,4 @@
-// $ANTLR 3.1.3 Mar 18, 2009 10:09:25 etc/Expr.g 2009-08-17 20:43:05
+// $ANTLR 3.1.3 Mar 18, 2009 10:09:25 /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g 2009-08-17 21:29:51
 
 	package parser;
 
@@ -52,7 +52,7 @@ public class ExprParser extends Parser {
     }
 
     public String[] getTokenNames() { return ExprParser.tokenNames; }
-    public String getGrammarFileName() { return "etc/Expr.g"; }
+    public String getGrammarFileName() { return "/home/kux/workspace/practice-java/functiondrawer/etc/Expr.g"; }
 
 
     public static class entry_return extends ParserRuleReturnScope {
@@ -61,7 +61,7 @@ public class ExprParser extends Parser {
     };
 
     // $ANTLR start "entry"
-    // etc/Expr.g:30:1: entry : ( expr NEWLINE -> expr | NEWLINE ->);
+    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:30:1: entry : ( expr NEWLINE -> expr | NEWLINE ->);
     public final ExprParser.entry_return entry() throws RecognitionException {
         ExprParser.entry_return retval = new ExprParser.entry_return();
         retval.start = input.LT(1);
@@ -78,7 +78,7 @@ public class ExprParser extends Parser {
         RewriteRuleTokenStream stream_NEWLINE=new RewriteRuleTokenStream(adaptor,"token NEWLINE");
         RewriteRuleSubtreeStream stream_expr=new RewriteRuleSubtreeStream(adaptor,"rule expr");
         try {
-            // etc/Expr.g:30:6: ( expr NEWLINE -> expr | NEWLINE ->)
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:30:6: ( expr NEWLINE -> expr | NEWLINE ->)
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -96,7 +96,7 @@ public class ExprParser extends Parser {
             }
             switch (alt1) {
                 case 1 :
-                    // etc/Expr.g:30:10: expr NEWLINE
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:30:10: expr NEWLINE
                     {
                     pushFollow(FOLLOW_expr_in_entry149);
                     expr1=expr();
@@ -131,7 +131,7 @@ public class ExprParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // etc/Expr.g:31:10: NEWLINE
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:31:10: NEWLINE
                     {
                     NEWLINE3=(Token)match(input,NEWLINE,FOLLOW_NEWLINE_in_entry174);  
                     stream_NEWLINE.add(NEWLINE3);
@@ -183,7 +183,7 @@ public class ExprParser extends Parser {
     };
 
     // $ANTLR start "expr"
-    // etc/Expr.g:36:1: expr : unaryExpr ( ( '+' | '-' ) unaryExpr )* ;
+    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:36:1: expr : unaryExpr ( ( '+' | '-' ) unaryExpr )* ;
     public final ExprParser.expr_return expr() throws RecognitionException {
         ExprParser.expr_return retval = new ExprParser.expr_return();
         retval.start = input.LT(1);
@@ -201,8 +201,8 @@ public class ExprParser extends Parser {
         CommonTree char_literal6_tree=null;
 
         try {
-            // etc/Expr.g:36:5: ( unaryExpr ( ( '+' | '-' ) unaryExpr )* )
-            // etc/Expr.g:36:9: unaryExpr ( ( '+' | '-' ) unaryExpr )*
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:36:5: ( unaryExpr ( ( '+' | '-' ) unaryExpr )* )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:36:9: unaryExpr ( ( '+' | '-' ) unaryExpr )*
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -212,7 +212,7 @@ public class ExprParser extends Parser {
             state._fsp--;
 
             adaptor.addChild(root_0, unaryExpr4.getTree());
-            // etc/Expr.g:36:19: ( ( '+' | '-' ) unaryExpr )*
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:36:19: ( ( '+' | '-' ) unaryExpr )*
             loop3:
             do {
                 int alt3=2;
@@ -225,9 +225,9 @@ public class ExprParser extends Parser {
 
                 switch (alt3) {
             	case 1 :
-            	    // etc/Expr.g:36:20: ( '+' | '-' ) unaryExpr
+            	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:36:20: ( '+' | '-' ) unaryExpr
             	    {
-            	    // etc/Expr.g:36:20: ( '+' | '-' )
+            	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:36:20: ( '+' | '-' )
             	    int alt2=2;
             	    int LA2_0 = input.LA(1);
 
@@ -245,7 +245,7 @@ public class ExprParser extends Parser {
             	    }
             	    switch (alt2) {
             	        case 1 :
-            	            // etc/Expr.g:36:21: '+'
+            	            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:36:21: '+'
             	            {
             	            char_literal5=(Token)match(input,8,FOLLOW_8_in_expr209); 
             	            char_literal5_tree = (CommonTree)adaptor.create(char_literal5);
@@ -255,7 +255,7 @@ public class ExprParser extends Parser {
             	            }
             	            break;
             	        case 2 :
-            	            // etc/Expr.g:36:27: '-'
+            	            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:36:27: '-'
             	            {
             	            char_literal6=(Token)match(input,9,FOLLOW_9_in_expr213); 
             	            char_literal6_tree = (CommonTree)adaptor.create(char_literal6);
@@ -309,7 +309,7 @@ public class ExprParser extends Parser {
     };
 
     // $ANTLR start "unaryExpr"
-    // etc/Expr.g:39:1: unaryExpr : ( '+' | '-' )* multExpr ;
+    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:39:1: unaryExpr : ( '+' | '-' )* multExpr ;
     public final ExprParser.unaryExpr_return unaryExpr() throws RecognitionException {
         ExprParser.unaryExpr_return retval = new ExprParser.unaryExpr_return();
         retval.start = input.LT(1);
@@ -325,12 +325,12 @@ public class ExprParser extends Parser {
         CommonTree char_literal9_tree=null;
 
         try {
-            // etc/Expr.g:39:10: ( ( '+' | '-' )* multExpr )
-            // etc/Expr.g:39:13: ( '+' | '-' )* multExpr
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:39:10: ( ( '+' | '-' )* multExpr )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:39:13: ( '+' | '-' )* multExpr
             {
             root_0 = (CommonTree)adaptor.nil();
 
-            // etc/Expr.g:39:13: ( '+' | '-' )*
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:39:13: ( '+' | '-' )*
             loop4:
             do {
                 int alt4=3;
@@ -346,7 +346,7 @@ public class ExprParser extends Parser {
 
                 switch (alt4) {
             	case 1 :
-            	    // etc/Expr.g:39:14: '+'
+            	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:39:14: '+'
             	    {
             	    char_literal8=(Token)match(input,8,FOLLOW_8_in_unaryExpr239); 
             	    char_literal8_tree = (CommonTree)adaptor.create(char_literal8);
@@ -356,7 +356,7 @@ public class ExprParser extends Parser {
             	    }
             	    break;
             	case 2 :
-            	    // etc/Expr.g:39:21: '-'
+            	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:39:21: '-'
             	    {
             	    char_literal9=(Token)match(input,9,FOLLOW_9_in_unaryExpr244); 
             	    char_literal9_tree = (CommonTree)adaptor.create(char_literal9);
@@ -404,7 +404,7 @@ public class ExprParser extends Parser {
     };
 
     // $ANTLR start "multExpr"
-    // etc/Expr.g:42:1: multExpr : atom ( ( '*' | '/' ) atom )* ;
+    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:42:1: multExpr : atom ( ( '*' | '/' ) atom )* ;
     public final ExprParser.multExpr_return multExpr() throws RecognitionException {
         ExprParser.multExpr_return retval = new ExprParser.multExpr_return();
         retval.start = input.LT(1);
@@ -420,8 +420,8 @@ public class ExprParser extends Parser {
         CommonTree set12_tree=null;
 
         try {
-            // etc/Expr.g:43:5: ( atom ( ( '*' | '/' ) atom )* )
-            // etc/Expr.g:43:9: atom ( ( '*' | '/' ) atom )*
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:43:5: ( atom ( ( '*' | '/' ) atom )* )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:43:9: atom ( ( '*' | '/' ) atom )*
             {
             root_0 = (CommonTree)adaptor.nil();
 
@@ -431,7 +431,7 @@ public class ExprParser extends Parser {
             state._fsp--;
 
             adaptor.addChild(root_0, atom11.getTree());
-            // etc/Expr.g:43:14: ( ( '*' | '/' ) atom )*
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:43:14: ( ( '*' | '/' ) atom )*
             loop5:
             do {
                 int alt5=2;
@@ -444,7 +444,7 @@ public class ExprParser extends Parser {
 
                 switch (alt5) {
             	case 1 :
-            	    // etc/Expr.g:43:15: ( '*' | '/' ) atom
+            	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:43:15: ( '*' | '/' ) atom
             	    {
             	    set12=(Token)input.LT(1);
             	    set12=(Token)input.LT(1);
@@ -500,7 +500,7 @@ public class ExprParser extends Parser {
     };
 
     // $ANTLR start "atom"
-    // etc/Expr.g:46:1: atom : ( FLOAT | ID | '(' expr ')' | 'sin' atom | 'cos' atom | 'exp' atom );
+    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:46:1: atom : ( FLOAT | ID | '(' expr ')' | 'sin' atom | 'cos' atom | 'exp' atom );
     public final ExprParser.atom_return atom() throws RecognitionException {
         ExprParser.atom_return retval = new ExprParser.atom_return();
         retval.start = input.LT(1);
@@ -532,7 +532,7 @@ public class ExprParser extends Parser {
         CommonTree string_literal23_tree=null;
 
         try {
-            // etc/Expr.g:46:5: ( FLOAT | ID | '(' expr ')' | 'sin' atom | 'cos' atom | 'exp' atom )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:46:5: ( FLOAT | ID | '(' expr ')' | 'sin' atom | 'cos' atom | 'exp' atom )
             int alt6=6;
             switch ( input.LA(1) ) {
             case FLOAT:
@@ -574,7 +574,7 @@ public class ExprParser extends Parser {
 
             switch (alt6) {
                 case 1 :
-                    // etc/Expr.g:46:9: FLOAT
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:46:9: FLOAT
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -586,7 +586,7 @@ public class ExprParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // etc/Expr.g:47:9: ID
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:47:9: ID
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -598,7 +598,7 @@ public class ExprParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // etc/Expr.g:48:9: '(' expr ')'
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:48:9: '(' expr ')'
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -614,7 +614,7 @@ public class ExprParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // etc/Expr.g:49:9: 'sin' atom
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:49:9: 'sin' atom
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -632,7 +632,7 @@ public class ExprParser extends Parser {
                     }
                     break;
                 case 5 :
-                    // etc/Expr.g:50:9: 'cos' atom
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:50:9: 'cos' atom
                     {
                     root_0 = (CommonTree)adaptor.nil();
 
@@ -650,7 +650,7 @@ public class ExprParser extends Parser {
                     }
                     break;
                 case 6 :
-                    // etc/Expr.g:51:9: 'exp' atom
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:51:9: 'exp' atom
                     {
                     root_0 = (CommonTree)adaptor.nil();
 

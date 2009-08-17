@@ -1,4 +1,4 @@
-// $ANTLR 3.1.3 Mar 18, 2009 10:09:25 etc/Expr.g 2009-08-17 20:43:06
+// $ANTLR 3.1.3 Mar 18, 2009 10:09:25 /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g 2009-08-17 21:29:52
 
 	package parser;
 
@@ -35,15 +35,15 @@ public class ExprLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "etc/Expr.g"; }
+    public String getGrammarFileName() { return "/home/kux/workspace/practice-java/functiondrawer/etc/Expr.g"; }
 
     // $ANTLR start "T__8"
     public final void mT__8() throws RecognitionException {
         try {
             int _type = T__8;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:7:6: ( '+' )
-            // etc/Expr.g:7:8: '+'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:7:6: ( '+' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:7:8: '+'
             {
             match('+'); 
 
@@ -62,8 +62,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = T__9;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:8:6: ( '-' )
-            // etc/Expr.g:8:8: '-'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:8:6: ( '-' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:8:8: '-'
             {
             match('-'); 
 
@@ -82,8 +82,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = T__10;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:9:7: ( '*' )
-            // etc/Expr.g:9:9: '*'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:9:7: ( '*' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:9:9: '*'
             {
             match('*'); 
 
@@ -102,8 +102,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:10:7: ( '/' )
-            // etc/Expr.g:10:9: '/'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:10:7: ( '/' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:10:9: '/'
             {
             match('/'); 
 
@@ -122,8 +122,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:11:7: ( '(' )
-            // etc/Expr.g:11:9: '('
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:11:7: ( '(' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:11:9: '('
             {
             match('('); 
 
@@ -142,8 +142,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:12:7: ( ')' )
-            // etc/Expr.g:12:9: ')'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:12:7: ( ')' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:12:9: ')'
             {
             match(')'); 
 
@@ -162,8 +162,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = T__14;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:13:7: ( 'sin' )
-            // etc/Expr.g:13:9: 'sin'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:13:7: ( 'sin' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:13:9: 'sin'
             {
             match("sin"); 
 
@@ -183,8 +183,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = T__15;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:14:7: ( 'cos' )
-            // etc/Expr.g:14:9: 'cos'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:14:7: ( 'cos' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:14:9: 'cos'
             {
             match("cos"); 
 
@@ -204,8 +204,8 @@ public class ExprLexer extends Lexer {
         try {
             int _type = T__16;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:15:7: ( 'exp' )
-            // etc/Expr.g:15:9: 'exp'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:15:7: ( 'exp' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:15:9: 'exp'
             {
             match("exp"); 
 
@@ -225,10 +225,10 @@ public class ExprLexer extends Lexer {
         try {
             int _type = ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:17:5: ( ( 'a' .. 'z' | 'A' .. 'Z' )+ )
-            // etc/Expr.g:17:9: ( 'a' .. 'z' | 'A' .. 'Z' )+
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:17:5: ( ( 'a' .. 'z' | 'A' .. 'Z' )+ )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:17:9: ( 'a' .. 'z' | 'A' .. 'Z' )+
             {
-            // etc/Expr.g:17:9: ( 'a' .. 'z' | 'A' .. 'Z' )+
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:17:9: ( 'a' .. 'z' | 'A' .. 'Z' )+
             int cnt1=0;
             loop1:
             do {
@@ -242,7 +242,7 @@ public class ExprLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // etc/Expr.g:
+            	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:
             	    {
             	    if ( (input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -282,14 +282,14 @@ public class ExprLexer extends Lexer {
         try {
             int _type = FLOAT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:19:7: ( ( '0' .. '9' )+ | ( '0' .. '9' )+ '.' ( '0' .. '9' )+ )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:19:7: ( ( '0' .. '9' )+ | ( '0' .. '9' )+ '.' ( '0' .. '9' )+ )
             int alt5=2;
             alt5 = dfa5.predict(input);
             switch (alt5) {
                 case 1 :
-                    // etc/Expr.g:19:9: ( '0' .. '9' )+
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:19:9: ( '0' .. '9' )+
                     {
-                    // etc/Expr.g:19:9: ( '0' .. '9' )+
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:19:9: ( '0' .. '9' )+
                     int cnt2=0;
                     loop2:
                     do {
@@ -303,7 +303,7 @@ public class ExprLexer extends Lexer {
 
                         switch (alt2) {
                     	case 1 :
-                    	    // etc/Expr.g:19:10: '0' .. '9'
+                    	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:19:10: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -323,9 +323,9 @@ public class ExprLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // etc/Expr.g:20:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )+
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:20:9: ( '0' .. '9' )+ '.' ( '0' .. '9' )+
                     {
-                    // etc/Expr.g:20:9: ( '0' .. '9' )+
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:20:9: ( '0' .. '9' )+
                     int cnt3=0;
                     loop3:
                     do {
@@ -339,7 +339,7 @@ public class ExprLexer extends Lexer {
 
                         switch (alt3) {
                     	case 1 :
-                    	    // etc/Expr.g:20:10: '0' .. '9'
+                    	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:20:10: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -356,7 +356,7 @@ public class ExprLexer extends Lexer {
                     } while (true);
 
                     match('.'); 
-                    // etc/Expr.g:20:23: ( '0' .. '9' )+
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:20:23: ( '0' .. '9' )+
                     int cnt4=0;
                     loop4:
                     do {
@@ -370,7 +370,7 @@ public class ExprLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // etc/Expr.g:20:24: '0' .. '9'
+                    	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:20:24: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -404,10 +404,10 @@ public class ExprLexer extends Lexer {
         try {
             int _type = NEWLINE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:22:8: ( ( '\\r' )? '\\n' )
-            // etc/Expr.g:22:9: ( '\\r' )? '\\n'
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:22:8: ( ( '\\r' )? '\\n' )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:22:9: ( '\\r' )? '\\n'
             {
-            // etc/Expr.g:22:9: ( '\\r' )?
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:22:9: ( '\\r' )?
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -416,7 +416,7 @@ public class ExprLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // etc/Expr.g:22:9: '\\r'
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:22:9: '\\r'
                     {
                     match('\r'); 
 
@@ -442,10 +442,10 @@ public class ExprLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // etc/Expr.g:24:5: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
-            // etc/Expr.g:24:9: ( ' ' | '\\t' | '\\n' | '\\r' )+
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:24:5: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:24:9: ( ' ' | '\\t' | '\\n' | '\\r' )+
             {
-            // etc/Expr.g:24:9: ( ' ' | '\\t' | '\\n' | '\\r' )+
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:24:9: ( ' ' | '\\t' | '\\n' | '\\r' )+
             int cnt7=0;
             loop7:
             do {
@@ -459,7 +459,7 @@ public class ExprLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // etc/Expr.g:
+            	    // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -496,96 +496,96 @@ public class ExprLexer extends Lexer {
     // $ANTLR end "WS"
 
     public void mTokens() throws RecognitionException {
-        // etc/Expr.g:1:8: ( T__8 | T__9 | T__10 | T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | ID | FLOAT | NEWLINE | WS )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:8: ( T__8 | T__9 | T__10 | T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | ID | FLOAT | NEWLINE | WS )
         int alt8=13;
         alt8 = dfa8.predict(input);
         switch (alt8) {
             case 1 :
-                // etc/Expr.g:1:10: T__8
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:10: T__8
                 {
                 mT__8(); 
 
                 }
                 break;
             case 2 :
-                // etc/Expr.g:1:15: T__9
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:15: T__9
                 {
                 mT__9(); 
 
                 }
                 break;
             case 3 :
-                // etc/Expr.g:1:20: T__10
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:20: T__10
                 {
                 mT__10(); 
 
                 }
                 break;
             case 4 :
-                // etc/Expr.g:1:26: T__11
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:26: T__11
                 {
                 mT__11(); 
 
                 }
                 break;
             case 5 :
-                // etc/Expr.g:1:32: T__12
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:32: T__12
                 {
                 mT__12(); 
 
                 }
                 break;
             case 6 :
-                // etc/Expr.g:1:38: T__13
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:38: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 7 :
-                // etc/Expr.g:1:44: T__14
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:44: T__14
                 {
                 mT__14(); 
 
                 }
                 break;
             case 8 :
-                // etc/Expr.g:1:50: T__15
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:50: T__15
                 {
                 mT__15(); 
 
                 }
                 break;
             case 9 :
-                // etc/Expr.g:1:56: T__16
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:56: T__16
                 {
                 mT__16(); 
 
                 }
                 break;
             case 10 :
-                // etc/Expr.g:1:62: ID
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:62: ID
                 {
                 mID(); 
 
                 }
                 break;
             case 11 :
-                // etc/Expr.g:1:65: FLOAT
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:65: FLOAT
                 {
                 mFLOAT(); 
 
                 }
                 break;
             case 12 :
-                // etc/Expr.g:1:71: NEWLINE
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:71: NEWLINE
                 {
                 mNEWLINE(); 
 
                 }
                 break;
             case 13 :
-                // etc/Expr.g:1:79: WS
+                // /home/kux/workspace/practice-java/functiondrawer/etc/Expr.g:1:79: WS
                 {
                 mWS(); 
 

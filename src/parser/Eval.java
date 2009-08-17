@@ -1,4 +1,4 @@
-// $ANTLR 3.1.3 Mar 18, 2009 10:09:25 etc/Eval.g 2009-08-17 20:43:07
+// $ANTLR 3.1.3 Mar 18, 2009 10:09:25 /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g 2009-08-17 21:29:53
 
 package parser;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class Eval extends TreeParser {
         
 
     public String[] getTokenNames() { return Eval.tokenNames; }
-    public String getGrammarFileName() { return "etc/Eval.g"; }
+    public String getGrammarFileName() { return "/home/kux/workspace/practice-java/functiondrawer/etc/Eval.g"; }
 
 
     /** Map variable name to Integer object holding value */
@@ -62,7 +62,7 @@ public class Eval extends TreeParser {
 
 
     // $ANTLR start "entry"
-    // etc/Eval.g:33:1: entry returns [double value] : v= expr ;
+    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:33:1: entry returns [double value] : v= expr ;
     public final double entry() throws RecognitionException {
         double value = 0.0;
 
@@ -70,8 +70,8 @@ public class Eval extends TreeParser {
 
 
         try {
-            // etc/Eval.g:34:6: (v= expr )
-            // etc/Eval.g:34:9: v= expr
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:34:6: (v= expr )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:34:9: v= expr
             {
             pushFollow(FOLLOW_expr_in_entry72);
             v=expr();
@@ -97,7 +97,7 @@ public class Eval extends TreeParser {
 
 
     // $ANTLR start "expr"
-    // etc/Eval.g:40:1: expr returns [double value] : ( ^( '+' a= expr b= expr ) | ^( '-' a= expr b= expr ) | ^( '*' a= expr b= expr ) | ^( '/' a= expr b= expr ) | ^( 'sin' v= expr ) | ^( 'cos' v= expr ) | ^( 'exp' v= expr ) | ^( '-' v= expr ) | ^( '+' v= expr ) | ID | FLOAT );
+    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:40:1: expr returns [double value] : ( ^( '+' a= expr b= expr ) | ^( '-' a= expr b= expr ) | ^( '*' a= expr b= expr ) | ^( '/' a= expr b= expr ) | ^( 'sin' v= expr ) | ^( 'cos' v= expr ) | ^( 'exp' v= expr ) | ^( '-' v= expr ) | ^( '+' v= expr ) | ID | FLOAT );
     public final double expr() throws RecognitionException {
         double value = 0.0;
 
@@ -111,12 +111,12 @@ public class Eval extends TreeParser {
 
 
         try {
-            // etc/Eval.g:41:5: ( ^( '+' a= expr b= expr ) | ^( '-' a= expr b= expr ) | ^( '*' a= expr b= expr ) | ^( '/' a= expr b= expr ) | ^( 'sin' v= expr ) | ^( 'cos' v= expr ) | ^( 'exp' v= expr ) | ^( '-' v= expr ) | ^( '+' v= expr ) | ID | FLOAT )
+            // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:41:5: ( ^( '+' a= expr b= expr ) | ^( '-' a= expr b= expr ) | ^( '*' a= expr b= expr ) | ^( '/' a= expr b= expr ) | ^( 'sin' v= expr ) | ^( 'cos' v= expr ) | ^( 'exp' v= expr ) | ^( '-' v= expr ) | ^( '+' v= expr ) | ID | FLOAT )
             int alt1=11;
             alt1 = dfa1.predict(input);
             switch (alt1) {
                 case 1 :
-                    // etc/Eval.g:41:9: ^( '+' a= expr b= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:41:9: ^( '+' a= expr b= expr )
                     {
                     match(input,8,FOLLOW_8_in_expr103); if (state.failed) return value;
 
@@ -140,7 +140,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 2 :
-                    // etc/Eval.g:42:9: ^( '-' a= expr b= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:42:9: ^( '-' a= expr b= expr )
                     {
                     match(input,9,FOLLOW_9_in_expr125); if (state.failed) return value;
 
@@ -164,7 +164,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 3 :
-                    // etc/Eval.g:43:9: ^( '*' a= expr b= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:43:9: ^( '*' a= expr b= expr )
                     {
                     match(input,10,FOLLOW_10_in_expr150); if (state.failed) return value;
 
@@ -188,7 +188,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 4 :
-                    // etc/Eval.g:44:9: ^( '/' a= expr b= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:44:9: ^( '/' a= expr b= expr )
                     {
                     match(input,11,FOLLOW_11_in_expr172); if (state.failed) return value;
 
@@ -212,7 +212,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 5 :
-                    // etc/Eval.g:45:9: ^( 'sin' v= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:45:9: ^( 'sin' v= expr )
                     {
                     match(input,14,FOLLOW_14_in_expr194); if (state.failed) return value;
 
@@ -231,7 +231,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 6 :
-                    // etc/Eval.g:46:9: ^( 'cos' v= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:46:9: ^( 'cos' v= expr )
                     {
                     match(input,15,FOLLOW_15_in_expr217); if (state.failed) return value;
 
@@ -250,7 +250,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 7 :
-                    // etc/Eval.g:47:9: ^( 'exp' v= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:47:9: ^( 'exp' v= expr )
                     {
                     match(input,16,FOLLOW_16_in_expr240); if (state.failed) return value;
 
@@ -269,7 +269,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 8 :
-                    // etc/Eval.g:48:9: ^( '-' v= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:48:9: ^( '-' v= expr )
                     {
                     match(input,9,FOLLOW_9_in_expr263); if (state.failed) return value;
 
@@ -288,7 +288,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 9 :
-                    // etc/Eval.g:49:9: ^( '+' v= expr )
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:49:9: ^( '+' v= expr )
                     {
                     match(input,8,FOLLOW_8_in_expr288); if (state.failed) return value;
 
@@ -307,7 +307,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 10 :
-                    // etc/Eval.g:50:9: ID
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:50:9: ID
                     {
                     ID1=(CommonTree)match(input,ID,FOLLOW_ID_in_expr312); if (state.failed) return value;
                     if ( state.backtracking==0 ) {
@@ -321,7 +321,7 @@ public class Eval extends TreeParser {
                     }
                     break;
                 case 11 :
-                    // etc/Eval.g:56:9: FLOAT
+                    // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:56:9: FLOAT
                     {
                     FLOAT2=(CommonTree)match(input,FLOAT,FOLLOW_FLOAT_in_expr333); if (state.failed) return value;
                     if ( state.backtracking==0 ) {
@@ -350,8 +350,8 @@ public class Eval extends TreeParser {
         double b = 0.0;
 
 
-        // etc/Eval.g:41:9: ( ^( '+' a= expr b= expr ) )
-        // etc/Eval.g:41:9: ^( '+' a= expr b= expr )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:41:9: ( ^( '+' a= expr b= expr ) )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:41:9: ^( '+' a= expr b= expr )
         {
         match(input,8,FOLLOW_8_in_synpred1_Eval103); if (state.failed) return ;
 
@@ -380,8 +380,8 @@ public class Eval extends TreeParser {
         double b = 0.0;
 
 
-        // etc/Eval.g:42:9: ( ^( '-' a= expr b= expr ) )
-        // etc/Eval.g:42:9: ^( '-' a= expr b= expr )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:42:9: ( ^( '-' a= expr b= expr ) )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:42:9: ^( '-' a= expr b= expr )
         {
         match(input,9,FOLLOW_9_in_synpred2_Eval125); if (state.failed) return ;
 
@@ -408,8 +408,8 @@ public class Eval extends TreeParser {
         double v = 0.0;
 
 
-        // etc/Eval.g:48:9: ( ^( '-' v= expr ) )
-        // etc/Eval.g:48:9: ^( '-' v= expr )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:48:9: ( ^( '-' v= expr ) )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:48:9: ^( '-' v= expr )
         {
         match(input,9,FOLLOW_9_in_synpred8_Eval263); if (state.failed) return ;
 
@@ -431,8 +431,8 @@ public class Eval extends TreeParser {
         double v = 0.0;
 
 
-        // etc/Eval.g:49:9: ( ^( '+' v= expr ) )
-        // etc/Eval.g:49:9: ^( '+' v= expr )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:49:9: ( ^( '+' v= expr ) )
+        // /home/kux/workspace/practice-java/functiondrawer/etc/Eval.g:49:9: ^( '+' v= expr )
         {
         match(input,8,FOLLOW_8_in_synpred9_Eval288); if (state.failed) return ;
 
