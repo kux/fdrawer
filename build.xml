@@ -1,0 +1,87 @@
+<project name="Function Drawer" default="build" basedir=".">
+
+	<property name="src.dir" value="src" />
+	<property name="build.dir" value="build" />
+	<property name="lib.dir" value="lib" />
+	<property name="etc.dir" value="etc" />
+	<property name="test.dir" value="test" />
+	<property name="grammar.file" value="${etc.dir}/Expr.g" />
+	<property name="eval.file" value="${etc.dir}/Eval.g" />
+
+
+	<target name="parser" depends="clean.parser" description="Generate java lexer and parser from ANTLR grammar file">
+
+		<!--		<antlr target="${grammar}" outputdirectory="${src.dir}/parser" /> -->
+
+		<java classname="org.antlr.Tool" classpath="${lib.dir}/antlr-3.1.3.jar">
+			<arg value="${grammar.file}" />
+		</java>
+
+		<java classname="org.antlr.Tool" classpath="${lib.dir}/antlr-3.1.3.jar">
+			<arg value="${eval.file}" />
+		</java>
+
+		<move file="${etc.dir}/ExprLexer.java" todir="${src.dir}/parser" />
+		<move file="${etc.dir}/ExprParser.java" todir="${src.dir}/parser" />
+		<move file="${etc.dir}/Eval.java" todir="${src.dir}/parser" />
+		<move file="${basedir}/Expr.tokens" todir="${src.dir}/parser" />
+		<move file="${basedir}/Eval.tokens" todir="${src.dir}/parser" />
+
+	</target>
+
+	<target name="clean.parser" description="Removes generated lexer and parser files">
+		<delete>
+			<fileset dir="${src.dir}/parser">
+				<include name="*" />
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="clean" depends="clean.parser">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}/classes" />
+		<mkdir dir="${build.dir}/test" />
+	</target>
+
+	<path id="compile.classpath">
+		<pathelement location="${lib.dir}/antlr-3.1.3.jar" />
+	</path>
+
+	<target name="compile" depends="parser, init" description="Compiles all .java project files">
+		<javac srcdir="${src.dir}" destdir="${build.dir}/classes" classpathref="compile.classpath" />
+	</target>
+
+	<path id="test.classpath">
+		<path refid="compile.classpath" />
+		<pathelement location="${lib.dir}/junit-4.7.jar" />
+		<pathelement location="${build.dir}/classes" />
+		<pathelement location="${build.dir}/test" />
+	</path>
+
+
+	<target name="compile.tests" depends="compile" description="Compiles all test files">
+		<javac srcdir="${test.dir}" destdir="${build.dir}/test" classpathref="test.classpath" />
+	</target>
+
+	<target name="test" depends="compile.tests" description="Run all unit tests">
+		<junit printsummary="true" haltonfailure="true">
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false" />
+			<formatter type="xml" />
+			<batchtest>
+				<fileset dir="${build.dir}/test" includes="**/*Test.class" />
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="build" depends="test" description="Builds application" />
+
+	<target name="rebuild" depends="clean, build" description="Rebuilds application" />
+
+
+</project>
+
