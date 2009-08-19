@@ -2,10 +2,10 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -26,6 +26,8 @@ public class Settings {
 		settingsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setUpSizes();
+		
+//		configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
 
 		settingsFrame.setContentPane(configPane);
 		configPane.add(functionText);
@@ -36,12 +38,12 @@ public class Settings {
 			public void actionPerformed(ActionEvent e) {
 
 				try {
-					FunctionPane drawingPane = new FunctionPane(new BorderLayout(),
+					FDrawComponent drawing = new FDrawComponent(
 							functionText.getText());
 					JDialog drawingD = new JDialog(settingsFrame,true);
 					
-					drawingPane.setPreferredSize(new Dimension(500,500));
-					drawingD.setContentPane(drawingPane);
+					drawing.setPreferredSize(new Dimension(500,500));
+					drawingD.add(drawing);
 					drawingD.pack();
 					drawingD.setVisible(true);
 					
@@ -61,7 +63,7 @@ public class Settings {
 	
 
 	private void setUpSizes() {
-		functionText.setPreferredSize(new Dimension(700, 20));
+		functionText.setPreferredSize(new Dimension(300, 20));
 		drawButton.setPreferredSize(new Dimension(100, 20));
 
 	}

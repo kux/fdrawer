@@ -22,9 +22,9 @@
 			<arg value="${eval.file}" />
 		</java>
 
-		<move file="${etc.dir}/ExprLexer.java" todir="${src.dir}/parser" />
-		<move file="${etc.dir}/ExprParser.java" todir="${src.dir}/parser" />
-		<move file="${etc.dir}/Eval.java" todir="${src.dir}/parser" />
+		<move file="${basedir}/ExprLexer.java" todir="${src.dir}/parser" />
+		<move file="${basedir}/ExprParser.java" todir="${src.dir}/parser" />
+		<move file="${basedir}/Eval.java" todir="${src.dir}/parser" />
 		<move file="${basedir}/Expr.tokens" todir="${src.dir}/parser" />
 		<move file="${basedir}/Eval.tokens" todir="${src.dir}/parser" />
 
@@ -69,7 +69,7 @@
 	</target>
 
 	<target name="test" depends="compile.tests" description="Run all unit tests">
-		<junit printsummary="true" haltonfailure="true" >
+		<junit printsummary="true" haltonfailure="true">
 			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false" />
 			<formatter type="xml" />
