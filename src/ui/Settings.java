@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -18,7 +20,10 @@ public class Settings {
 
 	private JPanel configPane = new JPanel();
 
-	private JTextField functionText = new JTextField("sin(x + t)");
+	private JTextField functionText1 = new JTextField("sin(x + t)");
+	private JTextField functionText2 = new JTextField("cos(x + t)");
+	private JTextField functionText3 = new JTextField("sin(x + t)*x");
+
 	private JButton drawButton = new JButton("Draw");
 
 	private Settings() {
@@ -26,31 +31,24 @@ public class Settings {
 		settingsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setUpSizes();
-		
-//		configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
+
+		configPane.setLayout(new BoxLayout(configPane, BoxLayout.Y_AXIS));
 
 		settingsFrame.setContentPane(configPane);
-		configPane.add(functionText);
+		configPane.add(functionText1);
+		configPane.add(functionText2);
+		configPane.add(functionText3);
 		configPane.add(drawButton);
 
 		drawButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				try {
-					FDrawComponent drawing = new FDrawComponent(
-							functionText.getText());
-					JDialog drawingD = new JDialog(settingsFrame,true);
-					
-					drawing.setPreferredSize(new Dimension(500,500));
-					drawingD.add(drawing);
-					drawingD.pack();
-					drawingD.setVisible(true);
-					
-				} catch (RecognitionException e1) {
-					// TODO Add custom error dialog
-					e1.printStackTrace();
-				}
+				List<String> functions = new ArrayList<String>();
+				functions.add(functionText1.getText());
+				functions.add(functionText2.getText());
+				functions.add(functionText3.getText());
+				new Drawer(settingsFrame, functions);
 
 			}
 		});
@@ -60,11 +58,12 @@ public class Settings {
 		settingsFrame.setVisible(true);
 
 	}
-	
 
 	private void setUpSizes() {
-		functionText.setPreferredSize(new Dimension(300, 20));
-		drawButton.setPreferredSize(new Dimension(100, 20));
+		functionText1.setPreferredSize(new Dimension(300, 20));
+		functionText2.setPreferredSize(new Dimension(300, 20));
+		functionText3.setPreferredSize(new Dimension(300, 20));
+		drawButton.setPreferredSize(new Dimension(300, 20));
 
 	}
 

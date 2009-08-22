@@ -34,16 +34,31 @@ public class FunctionEvaluator {
 
 	/**
 	 * 
-	 * @return result matrix holding the result of evaluating the function with
-	 *         all value combinations received as input
+	 * @param varMap
+	 *            LinkedHashMap is used because when calling <code>keySet</code>
+	 *            or <code>values</code> I want to receive the contained
+	 *            keys/values in the same order that the client added them
+	 *            <p>
+	 *            Example:<br>
+	 *            <code>
+	 *            LinkedHashMap<String, double[]> vm = new LinkedHashMap<String, double[]>();
+	 *            vm.put("x", new double[]{1,2,3});
+	 *            vm.put("y", new double[]{0,1});
+	 *            Matrix<Double> m = functionEvaluator.calculate(vm);
+	 *            </code><br>
+	 *            m will be a bidimensional matrix of size 3x2
+	 *            if a different Map type would have been used the matrix size might have been inverted.
+	 * 
+	 * 
+	 * @return
 	 */
 	public Matrix<Double> calculate(final LinkedHashMap<String, double[]> varMap) {
-		
+
 		HashMap<String, Double> memory = new HashMap<String, Double>();
-		Set<String> variables = varMap.keySet();		
+		Set<String> variables = varMap.keySet();
 		int flatSize = getMatrixSize(varMap.values());
 		int sideSize[] = getSides(varMap.values());
-		
+
 		Matrix<Double> rezultMatrix = new Matrix<Double>(sideSize);
 
 		for (int flatPoz = 0; flatPoz < flatSize; ++flatPoz) {
@@ -54,17 +69,16 @@ public class FunctionEvaluator {
 				memory
 						.put(variable,
 								varMap.get(variable)[currentPozition[j++]]);
-				
+
 			}
-			
-			
+
 			try {
 				evaluator.reset();
 				evaluator.setMemory(memory);
 				double rez = evaluator.entry();
 				rezultMatrix.setAtFlatIndex(Double.valueOf(rez), flatPoz);
 			} catch (RecognitionException e) {
-				//this can't be reached as the function was already parsed ??			
+				// this can't be reached as the function was already parsed ??
 			}
 
 		}
