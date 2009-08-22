@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 import javax.swing.JLabel;
+import javax.swing.SwingWorker;
 
 import model.FunctionEvaluator;
 import model.Matrix;
@@ -21,12 +22,13 @@ public class FDrawComponent extends JLabel {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final int PRE = 5;
+	private static final int PRE = 2;
+
+	private static final double REDCOEF = 10;
 
 	private double xleft = -5;
 	private double xright = 5;
-
-	private double ybottom = -5;
+	private double ybottom = -2;
 
 	private double timeStart = 0;
 
@@ -35,48 +37,70 @@ public class FDrawComponent extends JLabel {
 
 	private List<FunctionEvaluator> fevals = new ArrayList<FunctionEvaluator>();
 
+	
 
-	public FDrawComponent(List<String> functions) throws RecognitionException {
+	private Thread redrawingThread;
+	private boolean redraw;
 
-		super();
+	public synchronized boolean isRedraw() {
+		return redraw;
+	}
+
+	public synchronized void setRedraw(boolean redraw) {
+		this.redraw = redraw;
+	}
+
+	public void startDrawing(List<String> functions)
+			throws RecognitionException {
+
+		if (redrawingThread != null) {
+			setRedraw(true);
+			try {
+				redrawingThread.join();
+			} catch (InterruptedException e) {
+				// can't be reached, no thread can interrupt this thread
+			}
+		}
+
+		fevals.clear();
 		for (String func : functions) {
 			fevals.add(new FunctionEvaluator(func));
 		}
 
-		Thread time = new Thread(new Runnable() {
+		redrawingThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					timeNow = timeStart;
-					while (true) {
+				setRedraw(false);
+
+				timeNow = timeStart;
+				while (true) {
+					if (isRedraw())
+						return;
+					try {
 						Thread.sleep(100);
-						timeNow += timeIncrement;
-						syncRepaint();
+					} catch (InterruptedException e) {
+						// can't be reached, nobody will interrupt this thread
 					}
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					timeNow += timeIncrement;
+					repaint();
 				}
 			}
 		});
 
-		time.start();
+		redrawingThread.start();
 
-	}
-
-	private synchronized void syncRepaint() {
-		repaint();
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
+		drawAxis(g);
 
 		double increment = (this.xright - this.xleft) / getWidth();
 		double[] xvalues = new double[getWidth() * PRE];
 
-		for (int i = 0; i < getWidth()*PRE; ++i) {
-			xvalues[i] = xleft + increment/PRE * i;
+		for (int i = 0; i < getWidth() * PRE; ++i) {
+			xvalues[i] = xleft + increment / PRE * i;
 		}
 
 		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
@@ -91,48 +115,75 @@ public class FDrawComponent extends JLabel {
 
 			Matrix<Double> result = feval.calculate(varMap);
 
-			for (int x = 0; x < this.getWidth()*PRE; x++) {
+			for (int x = 0; x < this.getWidth() * PRE; x++) {
 				double rez = result.getAt(x, 0);
 				int y = getHeight()
 						- ((int) (rez / increment) - (int) (this.ybottom / increment));
 
-				g.drawRect(x/PRE, y,1, 1);
+				g.drawRect(x / PRE, y, 1, 1);
 
 			}
 		}
 
 	}
 
-	public double getXleft() {
-		return xleft;
+	private void drawAxis(Graphics g) {
+		g.setColor(Color.GRAY);
+		double inc = (xright - xleft) / getWidth();
+		if (xleft < 0 && xright > 0) {
+			int yaxis = (int) ((-xleft) / inc);
+			g.drawLine(yaxis, 0, yaxis, getHeight());
+		}
+
+		if (ybottom + inc * getHeight() > 0) {
+			int xaxis = getHeight() + (int) (ybottom / inc);
+			g.drawLine(0, xaxis, getWidth(), xaxis);
+		}
 	}
 
-	public void setXleft(double xleft) {
-		this.xleft = xleft;
+	public void zoomIn() {
+		double with = (xright - xleft) / REDCOEF;
+		xleft += with;
+		xright -= with;
+		double ywith = with * getHeight() / getWidth();
+		ybottom += ywith;
 	}
 
-	public double getXright() {
-		return xright;
+	public void zoomOut() {
+		double with = (xright - xleft) / REDCOEF;
+		xleft -= with;
+		xright += with;
+		double ywith = with * getHeight() / getWidth();
+		ybottom -= ywith;
 	}
 
-	public void setXright(double xright) {
-		this.xright = xright;
+	public void moveLeft() {
+		double with = (xright - xleft) / REDCOEF;
+		xleft -= with;
+		xright -= with;
 	}
 
-	public double getYbottom() {
-		return ybottom;
+	public void moveRight() {
+		double with = (xright - xleft) / REDCOEF;
+		xleft += with;
+		xright += with;
 	}
 
-	public void setYbottom(double ybottom) {
-		this.ybottom = ybottom;
+	public void moveUp() {
+		double with = (xright - xleft) / REDCOEF;
+		double ywith = with * getHeight() / getWidth();
+		ybottom -= ywith;
 	}
 
-	public double getTimeIncrement() {
-		return timeIncrement;
+	public void moveDown() {
+		double with = (xright - xleft) / REDCOEF;
+		double ywith = with * getHeight() / getWidth();
+		ybottom += ywith;
 	}
 
-	public void setTimeIncrement(double timeIncrement) {
-		this.timeIncrement = timeIncrement;
+
+	public void setMatrixsToDraw(List<Matrix<Double>> drawNow) {
+		
 	}
 
 }

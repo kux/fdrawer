@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="0" hostname="kux-desktop" name="model.NewModelTest" tests="1" time="0.177" timestamp="2009-08-22T16:27:11">
+<testsuite errors="0" failures="0" hostname="kux-desktop" name="model.NewModelTest" tests="1" time="0.182" timestamp="2009-08-22T16:28:56">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment" />
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-6-sun-1.6.0.14/jre/lib/i386" />
@@ -74,7 +74,7 @@
     <property name="sun.desktop" value="gnome" />
     <property name="sun.cpu.isalist" value="" />
   </properties>
-  <testcase classname="model.NewModelTest" name="design" time="0.126" />
+  <testcase classname="model.NewModelTest" name="design" time="0.103" />
   <system-out><![CDATA[(+ (+ x y) t)
 ]]></system-out>
   <system-err><![CDATA[line 0:-1 missing NEWLINE at '<EOF>'
