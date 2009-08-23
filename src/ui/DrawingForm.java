@@ -160,11 +160,11 @@ public class DrawingForm extends javax.swing.JFrame {
 			evaluators.add(new FunctionEvaluator(function));
 		} catch (UncheckedParserException e) {
 			JOptionPane.showMessageDialog(this, "Incorrect function: "
-					+ function + "\n" + e.getMessage());
+					+ function + "\n" + e.getMessage(),"Error" , JOptionPane.ERROR_MESSAGE);
 
 		} catch (RecognitionException e) {
 			JOptionPane.showMessageDialog(this, "Incorrect function: "
-					+ function + "\n" + e.getMessage());
+					+ function + "\n" + e.getMessage(),"Error" , JOptionPane.ERROR_MESSAGE);
 		}
 
 	}
@@ -172,10 +172,10 @@ public class DrawingForm extends javax.swing.JFrame {
 	private void initComponents() {
 
 		functionPane = new javax.swing.JPanel();
-		function1 = new javax.swing.JTextField("sin (x+t)*x*x/5");
-		function2 = new javax.swing.JTextField("cos (x+t)*x*x/5");
-		function3 = new javax.swing.JTextField("x*x/5");
-		function4 = new javax.swing.JTextField("-x*x/5");
+		function1 = new javax.swing.JTextField("sin (x+t)*pow(x,2)/5");
+		function2 = new javax.swing.JTextField("cos (x+t)*pow(x,2)/5");
+		function3 = new javax.swing.JTextField("pow(x,2)/5");
+		function4 = new javax.swing.JTextField("-pow(x,2)/5");
 		check1 = new javax.swing.JCheckBox();
 		check2 = new javax.swing.JCheckBox();
 		check3 = new javax.swing.JCheckBox();

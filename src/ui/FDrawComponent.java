@@ -49,7 +49,7 @@ public class FDrawComponent extends JLabel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		drawAxis(g);
-		
+
 		double increment = (this.xright - this.xleft) / getWidth();
 		Random rand = new Random(10);
 
@@ -149,8 +149,12 @@ public class FDrawComponent extends JLabel {
 						results.add(feval.calculate(varMap));
 					} catch (UndefinedVariableException e) {
 						evaluators.remove(feval);
-						JOptionPane.showMessageDialog(FDrawComponent.this, "Incorrect function: "
-								+ feval.getFunction() + "\n" + e.getMessage() +"\nOnly x, t variables are supported !!");
+						JOptionPane.showMessageDialog(FDrawComponent.this,
+
+						"Incorrect function: " + feval.getFunction() + "\n"
+								+ e.getMessage()
+								+ "\nOnly x, t variables are supported !!",
+								"Error", JOptionPane.ERROR_MESSAGE);
 						stopDrawing();
 					}
 				}
@@ -197,7 +201,8 @@ public class FDrawComponent extends JLabel {
 				evaluators.add(new FunctionEvaluator(function));
 			} catch (UncheckedParserException e) {
 				JOptionPane.showMessageDialog(this, "Incorrect function: "
-						+ function + "\n" + e.getMessage());
+						+ function + "\n" + e.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
 
 			} catch (RecognitionException e) {
 				JOptionPane.showMessageDialog(this, "Incorrect function: "

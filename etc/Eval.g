@@ -52,6 +52,7 @@ expr returns [double value]
     |   ^('exp' v=expr )     {$value = Math.exp(v);}
     |   ^('-'   v=expr )     {$value = -v; }
     |   ^('+'   v=expr )     {$value = v; }
+    |   ^('pow' a=expr b=expr) {$value = Math.pow(a,b);}
     |   ID 
         {
         	Double d = (Double)memory.get($ID.text);

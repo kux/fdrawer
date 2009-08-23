@@ -53,6 +53,22 @@ public class ParserTest {
 		CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
 		new Eval(nodes);
 	}
+	
+	@Test
+	public void powFunction() throws RecognitionException{
+		ANTLRStringStream input = new ANTLRStringStream("pow(x,3)+2");
+		ExprLexer lexer = new ExprLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		ExprParser parser = new ExprParser(tokens);
+		ExprParser.entry_return r = parser.entry();
+		CommonTree t = (CommonTree) r.getTree();
+		CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
+		Eval walker = new Eval(nodes);
+		HashMap<String, Double> memory = new HashMap<String, Double>();
+		memory.put("x", Double.valueOf(2));
+		walker.setMemory(memory);
+		Assert.assertEquals(10, walker.entry(), 0.1);
+	}
 
 	@Test
 	public void basicTest() throws IOException, RecognitionException {

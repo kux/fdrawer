@@ -69,6 +69,7 @@ atom:   FLOAT
     |   'sin'^ atom
     |   'cos'^ atom
     |   'exp'^ atom
+    |   'pow'^ '('! atom ','! atom ')'! 
 	;
 
 // END:expr
