@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="0" hostname="kux-desktop" name="parsertest.ParserTest" tests="8" time="0.03" timestamp="2009-08-23T12:19:58">
+<testsuite errors="0" failures="0" hostname="kux-desktop" name="parsertest.ParserTest" tests="8" time="0.059" timestamp="2009-08-23T17:25:48">
   <properties>
     <property name="java.vendor" value="Sun Microsystems Inc." />
     <property name="lib.dir" value="/home/kux/workspace/practice-java/functiondrawer/lib" />
@@ -77,14 +77,14 @@
     <property name="src.dir" value="/home/kux/workspace/practice-java/functiondrawer/src" />
     <property name="grammar.file" value="/home/kux/workspace/practice-java/functiondrawer/etc/Expr.g" />
   </properties>
-  <testcase classname="parsertest.ParserTest" name="badFunction" time="0.0020" />
-  <testcase classname="parsertest.ParserTest" name="powFunction" time="0.0060" />
-  <testcase classname="parsertest.ParserTest" name="basicTest" time="0.0030" />
+  <testcase classname="parsertest.ParserTest" name="badFunction" time="0.0010" />
+  <testcase classname="parsertest.ParserTest" name="powFunction" time="0.0050" />
+  <testcase classname="parsertest.ParserTest" name="basicTest" time="0.015" />
   <testcase classname="parsertest.ParserTest" name="withFloat" time="0.0010" />
   <testcase classname="parsertest.ParserTest" name="withUnary" time="0.0030" />
-  <testcase classname="parsertest.ParserTest" name="unaryNoPar" time="0.0020" />
-  <testcase classname="parsertest.ParserTest" name="unaryMinus" time="0.0010" />
-  <testcase classname="parsertest.ParserTest" name="unaryMinusNoPar" time="0.0" />
+  <testcase classname="parsertest.ParserTest" name="unaryNoPar" time="0.0010" />
+  <testcase classname="parsertest.ParserTest" name="unaryMinus" time="0.0030" />
+  <testcase classname="parsertest.ParserTest" name="unaryMinusNoPar" time="0.0010" />
   <system-out><![CDATA[(+ (pow x 3) 2)
 (/ (cos x) (cos (* 2 x)))
 (+ (+ 1.3 (* 1.01 2)) (* a 3.3))

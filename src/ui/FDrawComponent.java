@@ -22,9 +22,11 @@ import parser.UndefinedVariableException;
 public class FDrawComponent extends JLabel {
 
 	private static final long serialVersionUID = 1L;
+	private List<String> cachedFunctions;
 
 	public void startDrawing(List<String> functions) {
 
+		cachedFunctions = functions;
 		if (cworker != null)
 			cworker.stop();
 
@@ -38,6 +40,11 @@ public class FDrawComponent extends JLabel {
 		matrixesToDraw.clear();
 		cworker.stop();
 		repaint();
+	}
+	
+	public void restartDrawing(){
+		stopDrawing();
+		startDrawing(cachedFunctions);
 	}
 
 	public void setMatrixsToDraw(List<Matrix<Double>> drawNow) {
@@ -53,19 +60,25 @@ public class FDrawComponent extends JLabel {
 		double increment = (this.xright - this.xleft) / getWidth();
 		Random rand = new Random(10);
 
-		for (Matrix<Double> matrix : matrixesToDraw) {
+		try {
+			for (Matrix<Double> matrix : matrixesToDraw) {
 
-			g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
-					.nextFloat()));
+				g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
+						.nextFloat()));
 
-			for (int x = 0; x < this.getWidth() * PRE; x++) {
-				double rez = matrix.getAt(x, 0);
-				int y = getHeight()
-						- ((int) (rez / increment) - (int) (this.ybottom / increment));
+				for (int x = 0; x < this.getWidth() * PRE; x++) {
+					double rez = matrix.getAt(x, 0);
+					int y = getHeight()
+							- ((int) (rez / increment) - (int) (this.ybottom / increment));
 
-				g.drawRect(x / PRE, y, 1, 1);
+					g.drawRect(x / PRE, y, 1, 1);
 
+				}
 			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			//this happens when resizing the window, even if I stop the drawing in the ComponentListner...
+			//this happens because the sizes get modified and repaint is still called before
+			//the listener get's to run. Anyway nothing bad happens for swallowing the exception 
 		}
 	}
 
@@ -109,7 +122,7 @@ public class FDrawComponent extends JLabel {
 		ybottom -= ywith;
 	}
 
-	private static final int PRE = 3;
+	private static final int PRE = 1;
 	private static final double REDCOEF = 10;
 
 	private double xleft = -5;

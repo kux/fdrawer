@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="0" hostname="kux-desktop" name="model.NewModelTest" tests="1" time="0.121" timestamp="2009-08-23T12:19:58">
+<testsuite errors="0" failures="0" hostname="kux-desktop" name="model.NewModelTest" tests="1" time="0.089" timestamp="2009-08-23T17:25:48">
   <properties>
     <property name="java.vendor" value="Sun Microsystems Inc." />
     <property name="lib.dir" value="/home/kux/workspace/practice-java/functiondrawer/lib" />
@@ -77,7 +77,7 @@
     <property name="src.dir" value="/home/kux/workspace/practice-java/functiondrawer/src" />
     <property name="grammar.file" value="/home/kux/workspace/practice-java/functiondrawer/etc/Expr.g" />
   </properties>
-  <testcase classname="model.NewModelTest" name="design" time="0.114" />
+  <testcase classname="model.NewModelTest" name="design" time="0.071" />
   <system-out><![CDATA[(+ (+ x y) t)
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>

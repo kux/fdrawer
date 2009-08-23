@@ -3,6 +3,8 @@ package ui;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,6 +137,26 @@ public class DrawingForm extends javax.swing.JFrame {
 				checked4 = !checked4;
 			}
 		});
+		
+		functionDrawing.addComponentListener(new ComponentListener() {
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+			}
+
+			@Override
+			public void componentResized(ComponentEvent e) {
+				functionDrawing.restartDrawing();
+			}
+
+			@Override
+			public void componentMoved(ComponentEvent e) {
+			}
+
+			@Override
+			public void componentHidden(ComponentEvent e) {
+			}
+		});
 
 	}
 
@@ -160,11 +182,13 @@ public class DrawingForm extends javax.swing.JFrame {
 			evaluators.add(new FunctionEvaluator(function));
 		} catch (UncheckedParserException e) {
 			JOptionPane.showMessageDialog(this, "Incorrect function: "
-					+ function + "\n" + e.getMessage(),"Error" , JOptionPane.ERROR_MESSAGE);
+					+ function + "\n" + e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
 
 		} catch (RecognitionException e) {
 			JOptionPane.showMessageDialog(this, "Incorrect function: "
-					+ function + "\n" + e.getMessage(),"Error" , JOptionPane.ERROR_MESSAGE);
+					+ function + "\n" + e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
 		}
 
 	}
@@ -529,6 +553,7 @@ public class DrawingForm extends javax.swing.JFrame {
 
 		functionDrawing = new FDrawComponent();
 		drawingPane.add(functionDrawing, BorderLayout.CENTER);
+
 
 		check1.setSelected(true);
 		check2.setSelected(true);
