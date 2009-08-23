@@ -6,9 +6,12 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.antlr.runtime.RecognitionException;
+
+import parser.UncheckedParserException;
 
 /**
  * 
@@ -148,8 +151,11 @@ public class DrawingForm extends javax.swing.JFrame {
 		try {
 			functionDrawing.startDrawing(functions);
 		} catch (RecognitionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Incorrect function");
+			functionDrawing.stopDrawing();
+		} catch (UncheckedParserException e) {
+			JOptionPane.showMessageDialog(this, "Incorrect function");
+			functionDrawing.stopDrawing();
 		}
 	}
 

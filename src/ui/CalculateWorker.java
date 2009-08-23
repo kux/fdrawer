@@ -16,15 +16,16 @@ import model.Matrix;
 public class CalculateWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 
 	private FDrawComponent dcomp;
-	private List<FunctionEvaluator> fevals;
+	private List<FunctionEvaluator> functions;
 	private LinkedHashMap<String, double[]> varMap;
 	private double tstart;
 	private double tinc;
+	private boolean calculate = true;
 
 	public CalculateWorker(FDrawComponent dcomp, List<FunctionEvaluator> fevals,
 			LinkedHashMap<String, double[]> varMap, double tstart, double tinc) {
 		this.dcomp = dcomp;
-		this.fevals = fevals;
+		this.functions = fevals;
 		this.varMap = varMap;
 		this.tstart = tstart;
 		this.tinc = tinc;
@@ -34,14 +35,20 @@ public class CalculateWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 	@Override
 	protected Void doInBackground() throws Exception {
 		double time = tstart;
-		while (true) {
+
+		
+		while (calculate ) {
 			varMap.put("t", new double[] { time });
 			List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
-			for (FunctionEvaluator feval : fevals) {
+			for (FunctionEvaluator feval : functions) {
+				 
 				results.add(feval.calculate(varMap));
 			}
 			publish(results);
+			time += tinc;
 		}
+		
+		return null;
 	}
 	
     @Override
@@ -54,6 +61,11 @@ public class CalculateWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 
 	public void setVarMap(LinkedHashMap<String, double[]> varMap) {
 		this.varMap = varMap;
+	}
+
+	public void stop() {
+		calculate = false;
+		
 	}
 
 }

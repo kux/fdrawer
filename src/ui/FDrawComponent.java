@@ -22,7 +22,7 @@ public class FDrawComponent extends JLabel {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final int PRE = 2;
+	private static final int PRE = 3;
 
 	private static final double REDCOEF = 10;
 
@@ -31,71 +31,35 @@ public class FDrawComponent extends JLabel {
 	private double ybottom = -2;
 
 	private double timeStart = 0;
-
-	private double timeNow;
 	private double timeIncrement = 0.1;
 
-	private List<FunctionEvaluator> fevals = new ArrayList<FunctionEvaluator>();
-
-	
-
-	private Thread redrawingThread;
-	private boolean redraw;
-
-	public synchronized boolean isRedraw() {
-		return redraw;
-	}
-
-	public synchronized void setRedraw(boolean redraw) {
-		this.redraw = redraw;
-	}
+	private List<Matrix<Double>> matrixes = new ArrayList<Matrix<Double>>();
+	private CalculateWorker cworker = null;
 
 	public void startDrawing(List<String> functions)
 			throws RecognitionException {
 
-		if (redrawingThread != null) {
-			setRedraw(true);
-			try {
-				redrawingThread.join();
-			} catch (InterruptedException e) {
-				// can't be reached, no thread can interrupt this thread
-			}
+		if(cworker!=null)cworker.stop();
+		List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
+		for(String function: functions){
+			evaluators.add( new FunctionEvaluator(function));
 		}
-
-		fevals.clear();
-		for (String func : functions) {
-			fevals.add(new FunctionEvaluator(func));
-		}
-
-		redrawingThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				setRedraw(false);
-
-				timeNow = timeStart;
-				while (true) {
-					if (isRedraw())
-						return;
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						// can't be reached, nobody will interrupt this thread
-					}
-					timeNow += timeIncrement;
-					repaint();
-				}
-			}
-		});
-
-		redrawingThread.start();
+			
+		
+		LinkedHashMap<String, double[]> varmap = calculateVarMap();
+		cworker = new CalculateWorker(this, evaluators, varmap,
+				timeStart, timeIncrement);
+		cworker.execute();
 
 	}
+	
+	public void stopDrawing(){
+		matrixes.clear();
+		cworker.stop();
+		repaint();
+	}
 
-	@Override
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		drawAxis(g);
-
+	private LinkedHashMap<String, double[]> calculateVarMap() {
 		double increment = (this.xright - this.xleft) / getWidth();
 		double[] xvalues = new double[getWidth() * PRE];
 
@@ -105,18 +69,30 @@ public class FDrawComponent extends JLabel {
 
 		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
 		varMap.put("x", xvalues);
-		varMap.put("t", new double[] { timeNow });
+		return varMap;
 
+	}
+	
+	public void setMatrixsToDraw(List<Matrix<Double>> drawNow) {
+		matrixes = drawNow;
+		repaint();
+	}
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		drawAxis(g);
+
+		double increment = (this.xright - this.xleft) / getWidth();
 		Random rand = new Random(10);
-		for (FunctionEvaluator feval : fevals) {
+
+		for (Matrix<Double> matrix : matrixes) {
 
 			g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
 					.nextFloat()));
 
-			Matrix<Double> result = feval.calculate(varMap);
-
 			for (int x = 0; x < this.getWidth() * PRE; x++) {
-				double rez = result.getAt(x, 0);
+				double rez = matrix.getAt(x, 0);
 				int y = getHeight()
 						- ((int) (rez / increment) - (int) (this.ybottom / increment));
 
@@ -124,7 +100,6 @@ public class FDrawComponent extends JLabel {
 
 			}
 		}
-
 	}
 
 	private void drawAxis(Graphics g) {
@@ -143,18 +118,18 @@ public class FDrawComponent extends JLabel {
 
 	public void zoomIn() {
 		double with = (xright - xleft) / REDCOEF;
-		xleft += with;
-		xright -= with;
-		double ywith = with * getHeight() / getWidth();
-		ybottom += ywith;
-	}
-
-	public void zoomOut() {
-		double with = (xright - xleft) / REDCOEF;
 		xleft -= with;
 		xright += with;
 		double ywith = with * getHeight() / getWidth();
 		ybottom -= ywith;
+	}
+
+	public void zoomOut() {
+		double with = (xright - xleft) / REDCOEF;
+		xleft += with;
+		xright -= with;
+		double ywith = with * getHeight() / getWidth();
+		ybottom += ywith;
 	}
 
 	public void moveLeft() {
@@ -172,18 +147,13 @@ public class FDrawComponent extends JLabel {
 	public void moveUp() {
 		double with = (xright - xleft) / REDCOEF;
 		double ywith = with * getHeight() / getWidth();
-		ybottom -= ywith;
+		ybottom += ywith;
 	}
 
 	public void moveDown() {
 		double with = (xright - xleft) / REDCOEF;
 		double ywith = with * getHeight() / getWidth();
-		ybottom += ywith;
-	}
-
-
-	public void setMatrixsToDraw(List<Matrix<Double>> drawNow) {
-		
+		ybottom -= ywith;
 	}
 
 }

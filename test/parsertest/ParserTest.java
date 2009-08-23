@@ -7,6 +7,7 @@ import java.util.HashMap;
 import junit.framework.Assert;
 
 import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import parser.Eval;
 import parser.ExprLexer;
 import parser.ExprParser;
+import parser.UncheckedParserException;
 
 public class ParserTest {
 
@@ -28,15 +30,28 @@ public class ParserTest {
 			CommonTokenStream tokens = new CommonTokenStream(lexer);
 			ExprParser parser = new ExprParser(tokens);
 			ExprParser.entry_return r = parser.entry();
-			CommonTree t = (CommonTree) r.getTree(); 
+			CommonTree t = (CommonTree) r.getTree();
 			CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
-			eval =  new Eval(nodes); 
+			eval = new Eval(nodes);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return eval;
 
+	}
+
+
+	@Test(expected=UncheckedParserException.class)
+	public void badFunction() throws RecognitionException{
+		ANTLRStringStream input = new ANTLRStringStream(";12");
+		ExprLexer lexer = new ExprLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		ExprParser parser = new ExprParser(tokens);
+		ExprParser.entry_return r = parser.entry();
+		CommonTree t = (CommonTree) r.getTree();
+		CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
+		new Eval(nodes);
 	}
 
 	@Test
@@ -45,12 +60,12 @@ public class ParserTest {
 		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("x", Double.valueOf(2));
 		walker.setMemory(memory);
-		Assert.assertEquals( 0.636657076, walker.entry(), 0.1);
+		Assert.assertEquals(0.636657076, walker.entry(), 0.1);
 	}
 
 	@Test
 	public void withFloat() throws IOException, RecognitionException {
-		
+
 		Eval walker = initEvaluator("./test/parsertest/withfloat");
 		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("a", Double.valueOf(2));

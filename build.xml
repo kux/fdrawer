@@ -1,4 +1,4 @@
-<project name="Function Drawer" default="run" basedir=".">
+<project name="Function Drawer" default="build" basedir=".">
 
 	<property name="src.dir" location="src" />
 	<property name="lib.dir" location="lib" />
@@ -41,6 +41,7 @@
 		<delete>
 			<fileset dir="${src.dir}/parser">
 				<include name="*" />
+				<exclude name="UncheckedParserException.java" />
 			</fileset>
 		</delete>
 	</target>

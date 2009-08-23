@@ -24,6 +24,16 @@ import java.util.HashMap;
 		this.memory=memory;
 	}
 	
+	@Override
+    public void recover(IntStream is, RecognitionException re) {
+        
+    }
+    
+    public void displayRecognitionError(String[] tokenNames,
+                                        RecognitionException e) {
+
+        throw new parser.UncheckedParserException();
+    }
 
 }
 // END:members

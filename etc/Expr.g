@@ -12,6 +12,21 @@ options {
 	package parser;
 }
 
+@members {
+	@Override
+    public void recover(IntStream is, RecognitionException re) {
+        
+    }
+    
+    public void displayRecognitionError(String[] tokenNames,
+                                        RecognitionException e) {
+
+        throw new parser.UncheckedParserException();
+    }
+    
+}
+
+
 // START:tokens
 
 ID  :   ('a'..'z'|'A'..'Z')+ ;
@@ -27,8 +42,7 @@ WS  :   (' '|'\t'|'\n'|'\r')+ {skip();} ;
 // END:tokens
 
 // START:entry
-entry:   expr NEWLINE    {System.out.println($expr.tree==null?"null":$expr.tree.toStringTree());}    -> expr
-     |   NEWLINE             ->
+entry:   expr     {System.out.println($expr.tree==null?"null":$expr.tree.toStringTree());}    -> expr     
      ;
 // END:entry
 

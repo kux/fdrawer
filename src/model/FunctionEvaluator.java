@@ -14,13 +14,14 @@ import org.antlr.runtime.tree.CommonTree;
 import parser.Eval;
 import parser.ExprLexer;
 import parser.ExprParser;
+import parser.UncheckedParserException;
 
 public class FunctionEvaluator {
 
 	private final Eval evaluator;
 
 	public FunctionEvaluator(String function)
-			throws org.antlr.runtime.RecognitionException {
+			throws org.antlr.runtime.RecognitionException, UncheckedParserException {
 
 		ANTLRStringStream input = new ANTLRStringStream(function);
 		ExprLexer lexer = new ExprLexer(input);
