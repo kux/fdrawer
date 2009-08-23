@@ -12,18 +12,24 @@ options {
 	package parser;
 }
 
-@members {
-	@Override
-    public void recover(IntStream is, RecognitionException re) {
-        
-    }
-    
-    public void displayRecognitionError(String[] tokenNames,
-                                        RecognitionException e) {
+@lexer::members {
+	public void displayRecognitionError(String[] tokenNames,
+										RecognitionException e)
+	{
+		String hdr = getErrorHeader(e);
+		String msg = getErrorMessage(e, tokenNames);
+		throw new UncheckedParserException(msg);
+	}	   
+}
 
-        throw new parser.UncheckedParserException();
-    }
-    
+@members {
+	public void displayRecognitionError(String[] tokenNames,
+										RecognitionException e)
+	{
+		String hdr = getErrorHeader(e);
+		String msg = getErrorMessage(e, tokenNames);
+		throw new UncheckedParserException(msg);
+	}	   
 }
 
 

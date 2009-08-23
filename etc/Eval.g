@@ -25,15 +25,10 @@ import java.util.HashMap;
 	}
 	
 	@Override
-    public void recover(IntStream is, RecognitionException re) {
-        
-    }
-    
-    public void displayRecognitionError(String[] tokenNames,
-                                        RecognitionException e) {
-
-        throw new parser.UncheckedParserException();
-    }
+    public void emitErrorMessage(String msg) {
+		System.err.println(msg);
+		throw new UncheckedParserException(msg);
+	}
 
 }
 // END:members
@@ -61,7 +56,7 @@ expr returns [double value]
         {
         	Double d = (Double)memory.get($ID.text);
         	if ( d!=null ) $value = d.doubleValue();
-        	else System.err.println("undefined variable "+$ID.text);
+        	else throw new UndefinedVariableException("undefined variable "+$ID.text); 
         }
     |   FLOAT                  {$value = Double.parseDouble($FLOAT.text);}
     ;

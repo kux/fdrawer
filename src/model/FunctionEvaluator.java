@@ -15,14 +15,18 @@ import parser.Eval;
 import parser.ExprLexer;
 import parser.ExprParser;
 import parser.UncheckedParserException;
+import parser.UndefinedVariableException;
 
 public class FunctionEvaluator {
 
 	private final Eval evaluator;
+	private final String function;
 
 	public FunctionEvaluator(String function)
-			throws org.antlr.runtime.RecognitionException, UncheckedParserException {
+			throws org.antlr.runtime.RecognitionException,
+			UncheckedParserException {
 
+		this.function = function;
 		ANTLRStringStream input = new ANTLRStringStream(function);
 		ExprLexer lexer = new ExprLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -31,6 +35,10 @@ public class FunctionEvaluator {
 		CommonTree tree = (CommonTree) r.getTree();
 		BufferedTreeNodeStream bTree = new BufferedTreeNodeStream(tree);
 		evaluator = new Eval(bTree);
+	}
+
+	public String getFunction() {
+		return function;
 	}
 
 	/**
@@ -47,8 +55,9 @@ public class FunctionEvaluator {
 	 *            vm.put("y", new double[]{0,1});
 	 *            Matrix<Double> m = functionEvaluator.calculate(vm);
 	 *            </code><br>
-	 *            m will be a bidimensional matrix of size 3x2
-	 *            if a different Map type would have been used the matrix size might have been inverted.
+	 *            m will be a bidimensional matrix of size 3x2 if a different
+	 *            Map type would have been used the matrix size might have been
+	 *            inverted.
 	 * 
 	 * 
 	 * @return

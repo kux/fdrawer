@@ -4,14 +4,14 @@
 	<property name="lib.dir" location="lib" />
 	<property name="test.src.dir" location="test" />
 	<property name="etc.dir" location="etc" />
-	
+
 	<property name="build.dir" location="build" />
 	<property name="build.class.dir" location="${build.dir}/classes" />
 	<property name="build.test.dir" location="${build.dir}/test" />
 	<property name="build.deploy.dir" location="${build.dir}/deploy" />
 	<property name="build.fprod" location="${build.dir}/deploy/fdrawer.jar" />
-	
-	
+
+
 	<property name="grammar.file" value="${etc.dir}/Expr.g" />
 	<property name="eval.file" value="${etc.dir}/Eval.g" />
 	<property name="reports.tests" value="testresult" />
@@ -42,6 +42,7 @@
 			<fileset dir="${src.dir}/parser">
 				<include name="*" />
 				<exclude name="UncheckedParserException.java" />
+				<exclude name="UndefinedVariableException.java" />
 			</fileset>
 		</delete>
 	</target>
@@ -92,7 +93,7 @@
 		<unzip src="${lib.dir}/antlr-3.1.3.jar" dest="${build.class.dir}" />
 		<jar destfile="${build.fprod}" basedir="${build.class.dir}" includes="**/*.class">
 			<manifest>
-				<attribute name="Main-Class" value="ui.Settings" />
+				<attribute name="Main-Class" value="ui.DrawingForm" />
 			</manifest>
 		</jar>
 	</target>

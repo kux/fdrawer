@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
 import model.FunctionEvaluator;
@@ -15,66 +16,32 @@ import model.Matrix;
 
 import org.antlr.runtime.RecognitionException;
 
+import parser.UncheckedParserException;
+import parser.UndefinedVariableException;
+
 public class FDrawComponent extends JLabel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final int PRE = 3;
+	public void startDrawing(List<String> functions) {
 
-	private static final double REDCOEF = 10;
+		if (cworker != null)
+			cworker.stop();
 
-	private double xleft = -5;
-	private double xright = 5;
-	private double ybottom = -2;
-
-	private double timeStart = 0;
-	private double timeIncrement = 0.1;
-
-	private List<Matrix<Double>> matrixes = new ArrayList<Matrix<Double>>();
-	private CalculateWorker cworker = null;
-
-	public void startDrawing(List<String> functions)
-			throws RecognitionException {
-
-		if(cworker!=null)cworker.stop();
-		List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
-		for(String function: functions){
-			evaluators.add( new FunctionEvaluator(function));
-		}
-			
-		
 		LinkedHashMap<String, double[]> varmap = calculateVarMap();
-		cworker = new CalculateWorker(this, evaluators, varmap,
-				timeStart, timeIncrement);
+		cworker = new CalculateWorker(createEvaluators(functions), varmap);
 		cworker.execute();
 
 	}
-	
-	public void stopDrawing(){
-		matrixes.clear();
+
+	public void stopDrawing() {
+		matrixesToDraw.clear();
 		cworker.stop();
 		repaint();
 	}
 
-	private LinkedHashMap<String, double[]> calculateVarMap() {
-		double increment = (this.xright - this.xleft) / getWidth();
-		double[] xvalues = new double[getWidth() * PRE];
-
-		for (int i = 0; i < getWidth() * PRE; ++i) {
-			xvalues[i] = xleft + increment / PRE * i;
-		}
-
-		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
-		varMap.put("x", xvalues);
-		return varMap;
-
-	}
-	
 	public void setMatrixsToDraw(List<Matrix<Double>> drawNow) {
-		matrixes = drawNow;
+		matrixesToDraw = drawNow;
 		repaint();
 	}
 
@@ -82,11 +49,11 @@ public class FDrawComponent extends JLabel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		drawAxis(g);
-
+		
 		double increment = (this.xright - this.xleft) / getWidth();
 		Random rand = new Random(10);
 
-		for (Matrix<Double> matrix : matrixes) {
+		for (Matrix<Double> matrix : matrixesToDraw) {
 
 			g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
 					.nextFloat()));
@@ -99,20 +66,6 @@ public class FDrawComponent extends JLabel {
 				g.drawRect(x / PRE, y, 1, 1);
 
 			}
-		}
-	}
-
-	private void drawAxis(Graphics g) {
-		g.setColor(Color.GRAY);
-		double inc = (xright - xleft) / getWidth();
-		if (xleft < 0 && xright > 0) {
-			int yaxis = (int) ((-xleft) / inc);
-			g.drawLine(yaxis, 0, yaxis, getHeight());
-		}
-
-		if (ybottom + inc * getHeight() > 0) {
-			int xaxis = getHeight() + (int) (ybottom / inc);
-			g.drawLine(0, xaxis, getWidth(), xaxis);
 		}
 	}
 
@@ -154,6 +107,118 @@ public class FDrawComponent extends JLabel {
 		double with = (xright - xleft) / REDCOEF;
 		double ywith = with * getHeight() / getWidth();
 		ybottom -= ywith;
+	}
+
+	private static final int PRE = 3;
+	private static final double REDCOEF = 10;
+
+	private double xleft = -5;
+	private double xright = 5;
+	private double ybottom = -2;
+
+	private double timeStart = 0;
+	private double timeIncrement = 0.1;
+
+	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
+	private CalculateWorker cworker = null;
+
+	private class CalculateWorker extends
+			SwingWorker<Void, List<Matrix<Double>>> {
+
+		private List<FunctionEvaluator> evaluators;
+		private LinkedHashMap<String, double[]> varMap;
+		private boolean calculate = true;
+
+		private CalculateWorker(List<FunctionEvaluator> evaluators,
+				LinkedHashMap<String, double[]> varMap) {
+			this.evaluators = evaluators;
+			this.varMap = varMap;
+
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		protected Void doInBackground() throws Exception {
+			double time = timeStart;
+
+			while (calculate) {
+				varMap.put("t", new double[] { time });
+				List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
+				for (FunctionEvaluator feval : evaluators) {
+					try {
+						results.add(feval.calculate(varMap));
+					} catch (UndefinedVariableException e) {
+						evaluators.remove(feval);
+						JOptionPane.showMessageDialog(FDrawComponent.this, "Incorrect function: "
+								+ feval.getFunction() + "\n" + e.getMessage() +"\nOnly x, t variables are supported !!");
+						stopDrawing();
+					}
+				}
+				publish(results);
+				time += timeIncrement;
+			}
+
+			return null;
+		}
+
+		@Override
+		protected void process(List<List<Matrix<Double>>> matrixes) {
+			matrixesToDraw = matrixes.get(matrixes.size() - 1);
+			repaint();
+		}
+
+		public void stop() {
+			calculate = false;
+
+		}
+
+	}
+
+	private LinkedHashMap<String, double[]> calculateVarMap() {
+		double increment = (this.xright - this.xleft) / getWidth();
+		double[] xvalues = new double[getWidth() * PRE];
+
+		for (int i = 0; i < getWidth() * PRE; ++i) {
+			xvalues[i] = xleft + increment / PRE * i;
+		}
+
+		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
+		varMap.put("x", xvalues);
+		return varMap;
+
+	}
+
+	private List<FunctionEvaluator> createEvaluators(List<String> functions) {
+
+		List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
+
+		for (String function : functions) {
+			try {
+				evaluators.add(new FunctionEvaluator(function));
+			} catch (UncheckedParserException e) {
+				JOptionPane.showMessageDialog(this, "Incorrect function: "
+						+ function + "\n" + e.getMessage());
+
+			} catch (RecognitionException e) {
+				JOptionPane.showMessageDialog(this, "Incorrect function: "
+						+ function + "\n" + e.getMessage());
+			}
+		}
+		return evaluators;
+	}
+
+	private void drawAxis(Graphics g) {
+		g.setColor(Color.GRAY);
+		double inc = (xright - xleft) / getWidth();
+		if (xleft < 0 && xright > 0) {
+			int yaxis = (int) ((-xleft) / inc);
+			g.drawLine(yaxis, 0, yaxis, getHeight());
+		}
+
+		if (ybottom + inc * getHeight() > 0) {
+			int xaxis = getHeight() + (int) (ybottom / inc);
+			g.drawLine(0, xaxis, getWidth(), xaxis);
+		}
 	}
 
 }

@@ -9,6 +9,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import model.FunctionEvaluator;
+
 import org.antlr.runtime.RecognitionException;
 
 import parser.UncheckedParserException;
@@ -137,6 +139,7 @@ public class DrawingForm extends javax.swing.JFrame {
 	}
 
 	private void draw() {
+
 		List<String> functions = new ArrayList<String>();
 
 		if (checked1)
@@ -147,16 +150,23 @@ public class DrawingForm extends javax.swing.JFrame {
 			functions.add(function3.getText());
 		if (checked4)
 			functions.add(function4.getText());
-		
+		functionDrawing.startDrawing(functions);
+
+	}
+
+	private void addFunction(List<FunctionEvaluator> evaluators, String function) {
+
 		try {
-			functionDrawing.startDrawing(functions);
-		} catch (RecognitionException e) {
-			JOptionPane.showMessageDialog(this, "Incorrect function");
-			functionDrawing.stopDrawing();
+			evaluators.add(new FunctionEvaluator(function));
 		} catch (UncheckedParserException e) {
-			JOptionPane.showMessageDialog(this, "Incorrect function");
-			functionDrawing.stopDrawing();
+			JOptionPane.showMessageDialog(this, "Incorrect function: "
+					+ function + "\n" + e.getMessage());
+
+		} catch (RecognitionException e) {
+			JOptionPane.showMessageDialog(this, "Incorrect function: "
+					+ function + "\n" + e.getMessage());
 		}
+
 	}
 
 	private void initComponents() {

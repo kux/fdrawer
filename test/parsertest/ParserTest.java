@@ -44,7 +44,7 @@ public class ParserTest {
 
 	@Test(expected=UncheckedParserException.class)
 	public void badFunction() throws RecognitionException{
-		ANTLRStringStream input = new ANTLRStringStream(";12");
+		ANTLRStringStream input = new ANTLRStringStream(";123");
 		ExprLexer lexer = new ExprLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		ExprParser parser = new ExprParser(tokens);
