@@ -18,7 +18,7 @@ public class Matrix<T> {
 	private int flatten;
 
 	/**
-	 * the number of passes parameters defines number of dimensions the matrix
+	 * the number of passed parameters defines number of dimensions the matrix
 	 * has
 	 * <p>
 	 * ex: <code>new Matrix(4,2,3)</code> <br>
@@ -42,10 +42,17 @@ public class Matrix<T> {
 		}
 	}
 
+	/**
+	 * @return
+	 */
 	public int getDimNo() {
 		return dimNo;
 	}
 
+	/**
+	 * @param indices coordinates from where to retrieve the element
+	 * @return element at the requested coordinates
+	 */
 	public T getAt(int... indices) {
 		return vmatrix.get(getFlattenIndice(indices));
 	}
@@ -61,8 +68,8 @@ public class Matrix<T> {
 	public void setAt(T value, int... indices) {
 		vmatrix.set(getFlattenIndice(indices), value);
 	}
-	
-	public void setAtFlatIndex(T value, int flat){
+
+	public void setAtFlatIndex(T value, int flat) {
 		vmatrix.set(flat, value);
 	}
 

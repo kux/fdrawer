@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import model.FunctionEvaluator;
+import model.Matrix;
 
 import org.antlr.runtime.RecognitionException;
 
@@ -196,8 +197,8 @@ public class DrawingForm extends javax.swing.JFrame {
 	private void initComponents() {
 
 		functionPane = new javax.swing.JPanel();
-		function1 = new javax.swing.JTextField("sin (x+t)*pow(x,2)/5");
-		function2 = new javax.swing.JTextField("cos (x+t)*pow(x,2)/5");
+		function1 = new javax.swing.JTextField("sin (x+sin(t))*pow(x,2)/5");
+		function2 = new javax.swing.JTextField("cos (x+cos(t))*pow(x,2)/5");
 		function3 = new javax.swing.JTextField("pow(x,2)/5");
 		function4 = new javax.swing.JTextField("-pow(x,2)/5");
 		check1 = new javax.swing.JCheckBox();
@@ -573,6 +574,7 @@ public class DrawingForm extends javax.swing.JFrame {
 				new DrawingForm().setVisible(true);
 			}
 		});
+
 	}
 
 }

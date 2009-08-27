@@ -46,7 +46,7 @@ public class FunctionEvaluator {
 	 * @param varMap
 	 *            LinkedHashMap is used because when calling <code>keySet</code>
 	 *            or <code>values</code> I want to receive the contained
-	 *            keys/values in the same order that the client added them
+	 *            keys/values in the same order in witch the client added them
 	 *            <p>
 	 *            Example:<br>
 	 *            <code>
@@ -55,12 +55,12 @@ public class FunctionEvaluator {
 	 *            vm.put("y", new double[]{0,1});
 	 *            Matrix<Double> m = functionEvaluator.calculate(vm);
 	 *            </code><br>
-	 *            m will be a bidimensional matrix of size 3x2 if a different
-	 *            Map type would have been used the matrix size might have been
-	 *            inverted.
+	 *            m will be a bidimensional matrix of size 3x2<br>
+	 *            if a different Map type would have been used the matrix size
+	 *            might have been inverted.
 	 * 
 	 * 
-	 * @return
+	 * @return matrix holding the calculation's result
 	 */
 	public Matrix<Double> calculate(final LinkedHashMap<String, double[]> varMap) {
 

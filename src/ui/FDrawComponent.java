@@ -9,6 +9,7 @@ import java.util.Random;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import model.FunctionEvaluator;
@@ -41,8 +42,8 @@ public class FDrawComponent extends JLabel {
 		cworker.stop();
 		repaint();
 	}
-	
-	public void restartDrawing(){
+
+	public void restartDrawing() {
 		stopDrawing();
 		startDrawing(cachedFunctions);
 	}
@@ -55,7 +56,6 @@ public class FDrawComponent extends JLabel {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		drawAxis(g);
 
 		double increment = (this.xright - this.xleft) / getWidth();
 		Random rand = new Random(10);
@@ -76,53 +76,64 @@ public class FDrawComponent extends JLabel {
 				}
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
-			//this happens when resizing the window, even if I stop the drawing in the ComponentListner...
-			//this happens because the sizes get modified and repaint is still called before
-			//the listener get's to run. Anyway nothing bad happens for swallowing the exception 
+			// this happens when resizing the window, even if I stop the drawing
+			// in the ComponentListner...
+			// this happens because the sizes get modified and repaint is still
+			// called before
+			// the listener get's to run. Anyway nothing bad happens for
+			// swallowing the exception
 		}
+
+		drawAxis(g);
 	}
 
-	public void zoomIn() {
+	public void zoomOut() {
 		double with = (xright - xleft) / REDCOEF;
 		xleft -= with;
 		xright += with;
 		double ywith = with * getHeight() / getWidth();
 		ybottom -= ywith;
+		// restartDrawing();
 	}
 
-	public void zoomOut() {
+	public void zoomIn() {
 		double with = (xright - xleft) / REDCOEF;
 		xleft += with;
 		xright -= with;
 		double ywith = with * getHeight() / getWidth();
 		ybottom += ywith;
+		// restartDrawing();
 	}
 
 	public void moveLeft() {
 		double with = (xright - xleft) / REDCOEF;
 		xleft -= with;
 		xright -= with;
+		// restartDrawing();
 	}
 
 	public void moveRight() {
 		double with = (xright - xleft) / REDCOEF;
 		xleft += with;
 		xright += with;
+		// restartDrawing();
 	}
 
 	public void moveUp() {
 		double with = (xright - xleft) / REDCOEF;
 		double ywith = with * getHeight() / getWidth();
 		ybottom += ywith;
+		// restartDrawing();
 	}
 
 	public void moveDown() {
 		double with = (xright - xleft) / REDCOEF;
 		double ywith = with * getHeight() / getWidth();
 		ybottom -= ywith;
+		// restartDrawing();
 	}
 
-	private static final int PRE = 1;
+	private static final int PRE = 2;
 	private static final double REDCOEF = 10;
 
 	private double xleft = -5;
@@ -140,7 +151,7 @@ public class FDrawComponent extends JLabel {
 
 		private List<FunctionEvaluator> evaluators;
 		private LinkedHashMap<String, double[]> varMap;
-		private boolean calculate = true;
+		private volatile boolean calculate = true;
 
 		private CalculateWorker(List<FunctionEvaluator> evaluators,
 				LinkedHashMap<String, double[]> varMap) {
@@ -162,12 +173,19 @@ public class FDrawComponent extends JLabel {
 						results.add(feval.calculate(varMap));
 					} catch (UndefinedVariableException e) {
 						evaluators.remove(feval);
-						JOptionPane.showMessageDialog(FDrawComponent.this,
+						
+						//this option pane does not belong here because it's not on the EDT 
+						//TODO find solution to pop dialog on EDT
+						JOptionPane
+								.showMessageDialog(
+										FDrawComponent.this,
+										"Incorrect function: "
+												+ feval.getFunction()
+												+ "\n"
+												+ e.getMessage()
+												+ "\nOnly x, t variables are supported !!",
+										"Error", JOptionPane.ERROR_MESSAGE);
 
-						"Incorrect function: " + feval.getFunction() + "\n"
-								+ e.getMessage()
-								+ "\nOnly x, t variables are supported !!",
-								"Error", JOptionPane.ERROR_MESSAGE);
 						stopDrawing();
 					}
 				}
