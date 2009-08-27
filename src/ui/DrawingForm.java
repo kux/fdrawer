@@ -8,15 +8,7 @@ import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-
-import model.FunctionEvaluator;
-import model.Matrix;
-
-import org.antlr.runtime.RecognitionException;
-
-import parser.UncheckedParserException;
 
 /**
  * 
@@ -174,23 +166,6 @@ public class DrawingForm extends javax.swing.JFrame {
 		if (checked4)
 			functions.add(function4.getText());
 		functionDrawing.startDrawing(functions);
-
-	}
-
-	private void addFunction(List<FunctionEvaluator> evaluators, String function) {
-
-		try {
-			evaluators.add(new FunctionEvaluator(function));
-		} catch (UncheckedParserException e) {
-			JOptionPane.showMessageDialog(this, "Incorrect function: "
-					+ function + "\n" + e.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
-
-		} catch (RecognitionException e) {
-			JOptionPane.showMessageDialog(this, "Incorrect function: "
-					+ function + "\n" + e.getMessage(), "Error",
-					JOptionPane.ERROR_MESSAGE);
-		}
 
 	}
 

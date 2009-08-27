@@ -9,7 +9,6 @@ import java.util.Random;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import model.FunctionEvaluator;
