@@ -1,6 +1,6 @@
 package model;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * class modeling a n dimensional matrix
@@ -11,7 +11,7 @@ import java.util.Vector;
  */
 public class Matrix<T> {
 
-	private Vector<T> vmatrix;
+	private ArrayList<T> vmatrix;
 
 	private int[] sizes;
 	private int dimNo;
@@ -35,7 +35,7 @@ public class Matrix<T> {
 			matrixSize *= i;
 
 		flatten = matrixSize;
-		vmatrix = new Vector<T>(flatten);
+		vmatrix = new ArrayList<T>(flatten);
 
 		for (int i = 0; i < flatten; ++i) {
 			vmatrix.add(null);

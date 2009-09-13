@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -17,127 +18,115 @@ import model.Matrix;
 import org.antlr.runtime.RecognitionException;
 
 import parser.UncheckedParserException;
-import parser.UndefinedVariableException;
 
+@SuppressWarnings("serial")
 public class FDrawComponent extends JLabel {
 
-	private static final long serialVersionUID = 1L;
-	private List<String> cachedFunctions;
+	public void startDrawing(List<String> functions, double xleft, double xright) {
 
-	public void startDrawing(List<String> functions) {
-
-		cachedFunctions = functions;
 		if (cworker != null)
 			cworker.stop();
 
-		LinkedHashMap<String, double[]> varmap = calculateVarMap();
-		cworker = new CalculateWorker(createEvaluators(functions), varmap);
+		calculateXValues(xleft, xright);
+
+		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
+		varMap.put("x", this.xvalues);
+
+		cworker = new CalculateWorker(createEvaluators(functions), varMap);
 		cworker.execute();
 
 	}
 
-	public void stopDrawing() {
-		matrixesToDraw.clear();
-		cworker.stop();
-		repaint();
-	}
+	private void calculateXValues(double xleft, double xright) {
+		double increment = (xright - xleft) / PRECISION;
 
-	public void restartDrawing() {
-		stopDrawing();
-		startDrawing(cachedFunctions);
-	}
+		for (int i = 0; i < PRECISION; ++i) {
+			this.xvalues[i] = xleft + increment * i;
+		}
 
-	public void setMatrixsToDraw(List<Matrix<Double>> drawNow) {
-		matrixesToDraw = drawNow;
-		repaint();
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
-		double increment = (this.xright - this.xleft) / getWidth();
-		Random rand = new Random(10);
-
-		try {
-			for (Matrix<Double> matrix : matrixesToDraw) {
-
-				g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
-						.nextFloat()));
-
-				for (int x = 0; x < this.getWidth() * PRE; x++) {
-					double rez = matrix.getAt(x, 0);
-					int y = getHeight()
-							- ((int) (rez / increment) - (int) (this.ybottom / increment));
-
-					g.drawRect(x / PRE, y, 1, 1);
-
-				}
-			}
-		} catch (ArrayIndexOutOfBoundsException e) {
-			// this happens when resizing the window, even if I stop the drawing
-			// in the ComponentListner...
-			// this happens because the sizes get modified and repaint is still
-			// called before
-			// the listener get's to run. Anyway nothing bad happens for
-			// swallowing the exception
-		}
+		draw2dGraphs(g);
 
 		drawAxis(g);
 	}
 
+	private void draw2dGraphs(Graphics g) {
+		double pixelRange = (xvalues[PRECISION - 1] - xvalues[0]) / getWidth();
+		Random rand = new Random(10);
+
+		for (Matrix<Double> matrix : matrixesToDraw) {
+
+			g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
+					.nextFloat()));
+
+			int xant = -1000, yant = -1000;
+			for (int i = 0; i < PRECISION; i++) {
+				int x = (int) ((xvalues[i] - xvalues[0]) / pixelRange);
+				double rez = matrix.getAt(i, 0);
+				int y = getHeight()
+						- ((int) (rez / pixelRange) - (int) (this.ybottom / pixelRange));
+
+				if (Math.abs(xant - x) < this.getWidth() / 3
+						&& Math.abs(yant - y) < getHeight() / 3)
+					g.drawLine(xant, yant, x, y);
+				xant = x;
+				yant = y;
+			}
+		}
+	}
+
 	public void zoomOut() {
-		double with = (xright - xleft) / REDCOEF;
-		xleft -= with;
-		xright += with;
-		double ywith = with * getHeight() / getWidth();
-		ybottom -= ywith;
-		// restartDrawing();
+		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
+		calculateXValues(xvalues[0] - with, xvalues[PRECISION - 1] + with);
+
+		cworker.modifyXValues(xvalues);
+
 	}
 
 	public void zoomIn() {
-		double with = (xright - xleft) / REDCOEF;
-		xleft += with;
-		xright -= with;
-		double ywith = with * getHeight() / getWidth();
-		ybottom += ywith;
-		// restartDrawing();
+
+		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
+		calculateXValues(xvalues[0] + with, xvalues[PRECISION - 1] - with);
+
+		cworker.modifyXValues(xvalues);
 	}
 
 	public void moveLeft() {
-		double with = (xright - xleft) / REDCOEF;
-		xleft -= with;
-		xright -= with;
-		// restartDrawing();
+		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
+		calculateXValues(xvalues[0] - with, xvalues[PRECISION - 1] - with);
+
+		cworker.modifyXValues(xvalues);
 	}
 
 	public void moveRight() {
-		double with = (xright - xleft) / REDCOEF;
-		xleft += with;
-		xright += with;
-		// restartDrawing();
+		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
+		calculateXValues(xvalues[0] + with, xvalues[PRECISION - 1] + with);
+
+		cworker.modifyXValues(xvalues);
 	}
 
 	public void moveUp() {
-		double with = (xright - xleft) / REDCOEF;
+		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
 		double ywith = with * getHeight() / getWidth();
 		ybottom += ywith;
-		// restartDrawing();
 	}
 
 	public void moveDown() {
-		double with = (xright - xleft) / REDCOEF;
+		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
 		double ywith = with * getHeight() / getWidth();
 		ybottom -= ywith;
-		// restartDrawing();
 	}
 
-	private static final int PRE = 2;
-	private static final double REDCOEF = 10;
+	private static final int PRECISION = 1000;
+	private static final double REDCOEF = 50;
 
-	private double xleft = -5;
-	private double xright = 5;
 	private double ybottom = -2;
+	private double xvalues[] = new double[PRECISION];
 
 	private double timeStart = 0;
 	private double timeIncrement = 0.1;
@@ -148,15 +137,25 @@ public class FDrawComponent extends JLabel {
 	private class CalculateWorker extends
 			SwingWorker<Void, List<Matrix<Double>>> {
 
-		private List<FunctionEvaluator> evaluators;
-		private LinkedHashMap<String, double[]> varMap;
+		private final List<FunctionEvaluator> evaluators;
+		private final LinkedHashMap<String, double[]> varMap;
 		private volatile boolean calculate = true;
 
 		private CalculateWorker(List<FunctionEvaluator> evaluators,
 				LinkedHashMap<String, double[]> varMap) {
 			this.evaluators = evaluators;
-			this.varMap = varMap;
+			// copy the received map, this makes this class completely
+			// thread-safe
+			this.varMap = deepCopyLinkedHashMap(varMap);
+		}
 
+		private LinkedHashMap<String, double[]> deepCopyLinkedHashMap(
+				LinkedHashMap<String, double[]> mapToCopy) {
+			LinkedHashMap<String, double[]> newMap = new LinkedHashMap<String, double[]>();
+			for (String var : mapToCopy.keySet()) {
+				newMap.put(var, mapToCopy.get(var).clone());
+			}
+			return newMap;
 		}
 
 		@SuppressWarnings("unchecked")
@@ -165,28 +164,18 @@ public class FDrawComponent extends JLabel {
 			double time = timeStart;
 
 			while (calculate) {
-				varMap.put("t", new double[] { time });
+
+				synchronized (this) {
+					varMap.put("t", new double[] { time });
+				}
+
 				List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
 				for (FunctionEvaluator feval : evaluators) {
-					try {
-						results.add(feval.calculate(varMap));
-					} catch (UndefinedVariableException e) {
-						evaluators.remove(feval);
-						
-						//this option pane does not belong here because it's not on the EDT 
-						//TODO find solution to pop dialog on EDT
-						JOptionPane
-								.showMessageDialog(
-										FDrawComponent.this,
-										"Incorrect function: "
-												+ feval.getFunction()
-												+ "\n"
-												+ e.getMessage()
-												+ "\nOnly x, t variables are supported !!",
-										"Error", JOptionPane.ERROR_MESSAGE);
 
-						stopDrawing();
+					synchronized (this) {
+						results.add(feval.calculate(varMap));
 					}
+
 				}
 				publish(results);
 				time += timeIncrement;
@@ -201,24 +190,29 @@ public class FDrawComponent extends JLabel {
 			repaint();
 		}
 
+		@Override
+		protected void done() {
+			try {
+				get();
+			} catch (InterruptedException e) {
+				e.printStackTrace(); // can't happen
+			} catch (ExecutionException e) {
+				JOptionPane.showMessageDialog(FDrawComponent.this,
+						"Incorrect function\n" + e.getMessage()
+								+ "\nOnly x, t variables are supported !!",
+						"Error", JOptionPane.ERROR_MESSAGE);
+				clearDrawing();
+
+			}
+		}
+
 		public void stop() {
 			calculate = false;
-
 		}
 
-	}
-
-	private LinkedHashMap<String, double[]> calculateVarMap() {
-		double increment = (this.xright - this.xleft) / getWidth();
-		double[] xvalues = new double[getWidth() * PRE];
-
-		for (int i = 0; i < getWidth() * PRE; ++i) {
-			xvalues[i] = xleft + increment / PRE * i;
+		public synchronized void modifyXValues(double xvalues[]) {
+			varMap.put("x", xvalues.clone());
 		}
-
-		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
-		varMap.put("x", xvalues);
-		return varMap;
 
 	}
 
@@ -242,11 +236,20 @@ public class FDrawComponent extends JLabel {
 		return evaluators;
 	}
 
+	/**
+	 * doesn't seem to work though
+	 */
+	public void clearDrawing() {
+		matrixesToDraw.clear();
+		repaint();
+
+	}
+
 	private void drawAxis(Graphics g) {
 		g.setColor(Color.GRAY);
-		double inc = (xright - xleft) / getWidth();
-		if (xleft < 0 && xright > 0) {
-			int yaxis = (int) ((-xleft) / inc);
+		double inc = (xvalues[PRECISION - 1] - xvalues[0]) / getWidth();
+		if (xvalues[0] < 0 && xvalues[PRECISION - 1] > 0) {
+			int yaxis = (int) ((-xvalues[0]) / inc);
 			g.drawLine(yaxis, 0, yaxis, getHeight());
 		}
 
@@ -254,6 +257,18 @@ public class FDrawComponent extends JLabel {
 			int xaxis = getHeight() + (int) (ybottom / inc);
 			g.drawLine(0, xaxis, getWidth(), xaxis);
 		}
+	}
+
+	public void moveWith(int xdif, int ydif) {
+		double pixelRange = (xvalues[PRECISION - 1] - xvalues[0]) / getWidth();
+		double xwith = xdif * pixelRange;
+		double ywith = ydif * pixelRange;
+
+		ybottom += ywith;
+
+		calculateXValues(xvalues[0] - xwith, xvalues[PRECISION - 1] - xwith);
+		cworker.modifyXValues(xvalues);
+
 	}
 
 }

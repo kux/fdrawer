@@ -15,7 +15,6 @@ import parser.Eval;
 import parser.ExprLexer;
 import parser.ExprParser;
 import parser.UncheckedParserException;
-import parser.UndefinedVariableException;
 
 public class FunctionEvaluator {
 
