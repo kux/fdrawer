@@ -17,38 +17,33 @@ import java.util.List;
 import javax.swing.BorderFactory;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
-/**
- * This code was edited or generated using CloudGarden's Jigloo SWT/Swing GUI
- * Builder, which is free for non-commercial use. If Jigloo is being used
- * commercially (ie, by a corporation, company or business for any purpose
- * whatever) then you should purchase a license for each developer using Jigloo.
- * Please visit www.cloudgarden.com for details. Use of Jigloo implies
- * acceptance of these licensing terms. A COMMERCIAL LICENSE HAS NOT BEEN
- * PURCHASED FOR THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED LEGALLY FOR
- * ANY CORPORATE OR COMMERCIAL PURPOSE.
- */
+
 @SuppressWarnings("serial")
 public class DrawingFormX extends javax.swing.JFrame {
 	private JPanel mainPanel;
 	private JPanel drawingPanel;
 	private JScrollPane functionScroll;
+	private JSlider precisionSlider;
+	private JLabel precisionLabel;
 	private JButton drawButton;
 	private JTable functionTable;
 	private JPanel configPanel;
 	private FDrawComponent functionDrawer;
 
-	/**
-	 * Auto-generated main method to display this JFrame
-	 */
+
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -67,7 +62,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 
 	private void initGUI() {
 		try {
-			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			{
 				mainPanel = new JPanel();
 				BorderLayout mainPanelLayout = new BorderLayout();
@@ -77,12 +72,13 @@ public class DrawingFormX extends javax.swing.JFrame {
 					configPanel = new JPanel();
 					GridBagLayout configPanelLayout = new GridBagLayout();
 					configPanelLayout.rowWeights = new double[] { 0.0, 0.0,
-							0.0, 0.1 };
-					configPanelLayout.rowHeights = new int[] { 10, 98, 27, 130,
-							10 };
+							0.0, 0.0, 0.1, 0.0 };
+					configPanelLayout.rowHeights = new int[] { 10, 98, 20, 20,
+							105, 10 };
 					configPanelLayout.columnWeights = new double[] { 0.0, 0.0,
 							0.0, 0.1 };
-					configPanelLayout.columnWidths = new int[] { 10, 110, 110, 10 };
+					configPanelLayout.columnWidths = new int[] { 10, 90, 130,
+							10 };
 					mainPanel.add(configPanel, BorderLayout.WEST);
 					configPanel.setLayout(configPanelLayout);
 					configPanel.setPreferredSize(new java.awt.Dimension(240,
@@ -158,26 +154,31 @@ public class DrawingFormX extends javax.swing.JFrame {
 					}
 					{
 						drawButton = new JButton();
-						configPanel.add(drawButton, new GridBagConstraints(2,
-								2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+						configPanel.add(drawButton, new GridBagConstraints(1,
+								2, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER,
 								GridBagConstraints.HORIZONTAL, new Insets(0, 0,
 										0, 0), 0, 0));
 						drawButton.setText("Draw");
-						drawButton.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								TableModel tm = functionTable.getModel();
-								List<String> functions = new ArrayList<String>();
-								for (int i = 0; i < tm.getRowCount(); ++i) {
-									if ((Boolean) tm.getValueAt(i, 1))
-										functions.add((String) tm.getValueAt(i,
-												0));
-								}
-								
-								functionDrawer.startDrawing(functions, -3, 5);
 
-							}
-						});
+					}
+					{
+						precisionLabel = new JLabel();
+						configPanel.add(precisionLabel, new GridBagConstraints(
+								1, 3, 1, 1, 0.0, 0.0,
+								GridBagConstraints.LINE_END,
+								GridBagConstraints.NONE,
+								new Insets(0, 0, 0, 0), 0, 0));
+						precisionLabel.setText("precision");
+					}
+					{
+						precisionSlider = new JSlider();
+						configPanel.add(precisionSlider,
+								new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
+										GridBagConstraints.CENTER,
+										GridBagConstraints.HORIZONTAL,
+										new Insets(0, 0, 0, 0), 0, 0));
+						precisionSlider.setMinimum(10);
+						precisionSlider.setMaximum(20);
 					}
 
 				}
@@ -191,7 +192,8 @@ public class DrawingFormX extends javax.swing.JFrame {
 						functionDrawer
 								.setPreferredSize(new Dimension(500, 400));
 						drawingPanel.add(functionDrawer, BorderLayout.CENTER);
-						functionDrawer.setBorder(new LineBorder(new java.awt.Color(0,0,0), 1, false));
+						functionDrawer.setBorder(new LineBorder(
+								new java.awt.Color(0, 0, 0), 1, false));
 					}
 				}
 			}
@@ -224,7 +226,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 				int yant = y;
 				x = e.getX();
 				y = e.getY();
-				if (xant != -1 && yant != -1) {
+				if (xant != -1 && yant != -1 && (Math.abs(xant - x) > 1 || Math.abs(yant - y) > 1)) {
 					DrawingFormX.this.functionDrawer.moveWith(x - xant, y
 							- yant);
 				}
@@ -266,11 +268,32 @@ public class DrawingFormX extends javax.swing.JFrame {
 		functionDrawer.addMouseWheelListener(mouseListener);
 		functionDrawer.addMouseMotionListener(mouseListener);
 
-		/*
-		 * drawButton.addActionListener(new ActionListener() {
-		 * 
-		 * @Override public void actionPerformed(ActionEvent e) { draw(); } });
-		 */
+		drawButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				TableModel tm = functionTable.getModel();
+				List<String> functions = new ArrayList<String>();
+				for (int i = 0; i < tm.getRowCount(); ++i) {
+					if ((Boolean) tm.getValueAt(i, 1))
+						functions.add((String) tm.getValueAt(i, 0));
+				}
+
+				functionDrawer.startDrawing(functions, -3, 5, getActualPrecsion());
+
+			}
+		});
+		
+		precisionSlider.addChangeListener(new ChangeListener() {			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				functionDrawer.modifyPrecsion(getActualPrecsion());
+				
+			}
+		});
+	}
+	
+	private int getActualPrecsion(){
+		return (int)Math.pow(1.5,precisionSlider.getValue());
 	}
 
 }

@@ -22,12 +22,15 @@ import parser.UncheckedParserException;
 @SuppressWarnings("serial")
 public class FDrawComponent extends JLabel {
 
-	public void startDrawing(List<String> functions, double xleft, double xright) {
+	private boolean drawingStarted = false;
 
-		if (cworker != null)
-			cworker.stop();
+	public void startDrawing(List<String> functions, double xleft,
+			double xright, int precision) {
 
-		calculateXValues(xleft, xright);
+		// in case this is a actually a "redraw"
+		stopDrawing();
+
+		calculateXValues(xleft, xright, precision);
 
 		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
 		varMap.put("x", this.xvalues);
@@ -35,12 +38,146 @@ public class FDrawComponent extends JLabel {
 		cworker = new CalculateWorker(createEvaluators(functions), varMap);
 		cworker.execute();
 
+		this.drawingStarted = true;
+
 	}
 
-	private void calculateXValues(double xleft, double xright) {
-		double increment = (xright - xleft) / PRECISION;
+	public void modifyPrecsion(int precision) {
+		calculateXValues(xvalues[0], xvalues[xvalues.length - 1], precision);
+		cworker.modifyXValues(xvalues);
+	}
 
-		for (int i = 0; i < PRECISION; ++i) {
+	/**
+	 * if working, stop the calculating worker
+	 */
+	public void stopDrawing() {
+		if (cworker != null)
+			cworker.stop();
+		this.drawingStarted = false;
+
+	}
+
+	/**
+	 * 
+	 * @param xdif
+	 * @param ydif
+	 * @throws IllegalStateException
+	 *             if no drawing is in progress
+	 */
+	public void moveWith(int xdif, int ydif) {
+		checkIfDrawing();
+		double pixelRange = (xvalues[xvalues.length - 1] - xvalues[0])
+				/ getWidth();
+		double xwith = xdif * pixelRange;
+		double ywith = ydif * pixelRange;
+
+		ybottom += ywith;
+
+		calculateXValues(xvalues[0] - xwith, xvalues[xvalues.length - 1]
+				- xwith, xvalues.length);
+		cworker.modifyXValues(xvalues);
+
+	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if no drawing is in progress
+	 */
+	public void zoomOut() {
+		checkIfDrawing();
+		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
+		calculateXValues(xvalues[0] - with, xvalues[xvalues.length - 1] + with,
+				xvalues.length);
+
+		cworker.modifyXValues(xvalues);
+
+	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if no drawing is in progress
+	 */
+	public void zoomIn() {
+
+		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
+		calculateXValues(xvalues[0] + with, xvalues[xvalues.length - 1] - with,
+				xvalues.length);
+
+		cworker.modifyXValues(xvalues);
+	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if no drawing is in progress
+	 */
+	public void moveLeft() {
+		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
+		calculateXValues(xvalues[0] - with, xvalues[xvalues.length - 1] - with,
+				xvalues.length);
+
+		cworker.modifyXValues(xvalues);
+	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if no drawing is in progress
+	 */
+	public void moveRight() {
+		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
+		calculateXValues(xvalues[0] + with, xvalues[xvalues.length - 1] + with,
+				xvalues.length);
+
+		cworker.modifyXValues(xvalues);
+	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if no drawing is in progress
+	 */
+	public void moveUp() {
+		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
+		double ywith = with * getHeight() / getWidth();
+		ybottom += ywith;
+	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if no drawing is in progress
+	 */
+	public void moveDown() {
+		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
+		double ywith = with * getHeight() / getWidth();
+		ybottom -= ywith;
+	}
+
+	/**
+	 * @throws IllegalStateException
+	 *             if no drawing is in progress
+	 */
+	private void checkIfDrawing() {
+		if (!this.drawingStarted)
+			throw new IllegalStateException("Drawing not started");
+	}
+
+	private static final double REDCOEF = 50;
+
+	// private int xvalues.length = 1000;
+
+	private double ybottom = -2;
+	private double xvalues[];
+
+	private double timeStart = 0;
+	private double timeIncrement = 0.1;
+
+	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
+	private CalculateWorker cworker = null;
+
+	private void calculateXValues(double xleft, double xright, int precision) {
+
+		xvalues = new double[precision];
+		double increment = (xright - xleft) / precision;
+
+		for (int i = 0; i < precision; ++i) {
 			this.xvalues[i] = xleft + increment * i;
 		}
 
@@ -49,23 +186,35 @@ public class FDrawComponent extends JLabel {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-
 		draw2dGraphs(g);
-
-		drawAxis(g);
 	}
 
 	private void draw2dGraphs(Graphics g) {
-		double pixelRange = (xvalues[PRECISION - 1] - xvalues[0]) / getWidth();
+
+		// if drawing not started yet, do nothing
+		if (!drawingStarted)
+			return;
+
+		drawAxis(g);
+
+		double pixelRange = (xvalues[xvalues.length - 1] - xvalues[0])
+				/ getWidth();
 		Random rand = new Random(10);
 
 		for (Matrix<Double> matrix : matrixesToDraw) {
+
+			//matrix.getMatrixSize()[0] - x axis values on the result matrix
+			//skip if precision was changed and matrixes received from the calculating worker are no
+			//longer consistent
+			if (matrix.getMatrixSize()[0] != xvalues.length)
+				break;
 
 			g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
 					.nextFloat()));
 
 			int xant = -1000, yant = -1000;
-			for (int i = 0; i < PRECISION; i++) {
+
+			for (int i = 0; i <xvalues.length - 1; i++) {
 				int x = (int) ((xvalues[i] - xvalues[0]) / pixelRange);
 				double rez = matrix.getAt(i, 0);
 				int y = getHeight()
@@ -80,59 +229,19 @@ public class FDrawComponent extends JLabel {
 		}
 	}
 
-	public void zoomOut() {
-		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
-		calculateXValues(xvalues[0] - with, xvalues[PRECISION - 1] + with);
+	private void drawAxis(Graphics g) {
+		g.setColor(Color.GRAY);
+		double inc = (xvalues[xvalues.length - 1] - xvalues[0]) / getWidth();
+		if (xvalues[0] < 0 && xvalues[xvalues.length - 1] > 0) {
+			int yaxis = (int) ((-xvalues[0]) / inc);
+			g.drawLine(yaxis, 0, yaxis, getHeight());
+		}
 
-		cworker.modifyXValues(xvalues);
-
+		if (ybottom + inc * getHeight() > 0) {
+			int xaxis = getHeight() + (int) (ybottom / inc);
+			g.drawLine(0, xaxis, getWidth(), xaxis);
+		}
 	}
-
-	public void zoomIn() {
-
-		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
-		calculateXValues(xvalues[0] + with, xvalues[PRECISION - 1] - with);
-
-		cworker.modifyXValues(xvalues);
-	}
-
-	public void moveLeft() {
-		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
-		calculateXValues(xvalues[0] - with, xvalues[PRECISION - 1] - with);
-
-		cworker.modifyXValues(xvalues);
-	}
-
-	public void moveRight() {
-		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
-		calculateXValues(xvalues[0] + with, xvalues[PRECISION - 1] + with);
-
-		cworker.modifyXValues(xvalues);
-	}
-
-	public void moveUp() {
-		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
-		double ywith = with * getHeight() / getWidth();
-		ybottom += ywith;
-	}
-
-	public void moveDown() {
-		double with = (xvalues[PRECISION - 1] - xvalues[0]) / REDCOEF;
-		double ywith = with * getHeight() / getWidth();
-		ybottom -= ywith;
-	}
-
-	private static final int PRECISION = 1000;
-	private static final double REDCOEF = 50;
-
-	private double ybottom = -2;
-	private double xvalues[] = new double[PRECISION];
-
-	private double timeStart = 0;
-	private double timeIncrement = 0.1;
-
-	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
-	private CalculateWorker cworker = null;
 
 	private class CalculateWorker extends
 			SwingWorker<Void, List<Matrix<Double>>> {
@@ -201,7 +310,7 @@ public class FDrawComponent extends JLabel {
 						"Incorrect function\n" + e.getMessage()
 								+ "\nOnly x, t variables are supported !!",
 						"Error", JOptionPane.ERROR_MESSAGE);
-				clearDrawing();
+				stopDrawing();
 
 			}
 		}
@@ -234,41 +343,6 @@ public class FDrawComponent extends JLabel {
 			}
 		}
 		return evaluators;
-	}
-
-	/**
-	 * doesn't seem to work though
-	 */
-	public void clearDrawing() {
-		matrixesToDraw.clear();
-		repaint();
-
-	}
-
-	private void drawAxis(Graphics g) {
-		g.setColor(Color.GRAY);
-		double inc = (xvalues[PRECISION - 1] - xvalues[0]) / getWidth();
-		if (xvalues[0] < 0 && xvalues[PRECISION - 1] > 0) {
-			int yaxis = (int) ((-xvalues[0]) / inc);
-			g.drawLine(yaxis, 0, yaxis, getHeight());
-		}
-
-		if (ybottom + inc * getHeight() > 0) {
-			int xaxis = getHeight() + (int) (ybottom / inc);
-			g.drawLine(0, xaxis, getWidth(), xaxis);
-		}
-	}
-
-	public void moveWith(int xdif, int ydif) {
-		double pixelRange = (xvalues[PRECISION - 1] - xvalues[0]) / getWidth();
-		double xwith = xdif * pixelRange;
-		double ywith = ydif * pixelRange;
-
-		ybottom += ywith;
-
-		calculateXValues(xvalues[0] - xwith, xvalues[PRECISION - 1] - xwith);
-		cworker.modifyXValues(xvalues);
-
 	}
 
 }

@@ -13,7 +13,7 @@ public class Matrix<T> {
 
 	private ArrayList<T> vmatrix;
 
-	private int[] sizes;
+	private int[] matrixSize;
 	private int dimNo;
 	private int flatten;
 
@@ -28,7 +28,7 @@ public class Matrix<T> {
 	 */
 	public Matrix(int... sizes) {
 
-		this.sizes = sizes;
+		this.matrixSize = sizes;
 		this.dimNo = sizes.length;
 		int matrixSize = 1;
 		for (int i : sizes)
@@ -43,14 +43,25 @@ public class Matrix<T> {
 	}
 
 	/**
-	 * @return
+	 * @return number of dimensions the matrix has
 	 */
 	public int getDimNo() {
 		return dimNo;
 	}
 
 	/**
-	 * @param indices coordinates from where to retrieve the element
+	 * 
+	 * @return this matrix's size
+	 *         <p>
+	 *         ex: a 3d matrix will return a 3 element array
+	 */
+	public int[] getMatrixSize() {
+		return matrixSize;
+	}
+
+	/**
+	 * @param indices
+	 *            coordinates from where to retrieve the element
 	 * @return element at the requested coordinates
 	 */
 	public T getAt(int... indices) {
@@ -80,10 +91,10 @@ public class Matrix<T> {
 		int flattenIndice = 0;
 		int fcoef = flatten;
 		for (int i = 0; i < indices.length; ++i) {
-			if (indices[i] > sizes[i] || indices[i] < 0)
+			if (indices[i] > matrixSize[i] || indices[i] < 0)
 				throw new IndexOutOfBoundsException();
 
-			fcoef /= sizes[i];
+			fcoef /= matrixSize[i];
 			flattenIndice += indices[i] * fcoef;
 		}
 		return flattenIndice;
