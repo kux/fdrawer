@@ -86,7 +86,7 @@ public class Matrix<T> {
 
 	private int getFlattenIndice(int... indices) {
 		if (indices.length != dimNo)
-			throw new IndexOutOfBoundsException();
+			throw new IllegalArgumentException("Number of indices don't match matrix dimmension");
 
 		int flattenIndice = 0;
 		int fcoef = flatten;

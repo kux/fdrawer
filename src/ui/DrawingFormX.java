@@ -14,7 +14,6 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.BorderFactory;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -30,19 +29,16 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
-
 @SuppressWarnings("serial")
 public class DrawingFormX extends javax.swing.JFrame {
 	private JPanel mainPanel;
 	private JPanel drawingPanel;
 	private JScrollPane functionScroll;
 	private JSlider precisionSlider;
-	private JLabel precisionLabel;
 	private JButton drawButton;
 	private JTable functionTable;
 	private JPanel configPanel;
 	private FDrawComponent functionDrawer;
-
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -97,13 +93,13 @@ public class DrawingFormX extends javax.swing.JFrame {
 										"draw" };
 
 								private Object[][] data = {
-										{ "sin(x+t)", new Boolean(true) },
+										{ "3+sin(x+t)/2+cos(y+t)/2", new Boolean(true) },
 										{ "sin(x+t/2)*pow(x,2)",
-												new Boolean(true) },
+												new Boolean(false) },
 										{ "cos(x+t/4)*pow(x,2)",
-												new Boolean(true) },
-										{ "pow(x,2)", new Boolean(true) },
-										{ "-pow(x,2)", new Boolean(true) } };
+												Boolean.valueOf(false) },
+										{ "pow(x,2)", Boolean.valueOf(false) },
+										{ "-pow(x,2)", Boolean.valueOf(false) } };
 
 								@Override
 								public int getColumnCount() {
@@ -162,23 +158,20 @@ public class DrawingFormX extends javax.swing.JFrame {
 
 					}
 					{
-						precisionLabel = new JLabel();
-						configPanel.add(precisionLabel, new GridBagConstraints(
-								1, 3, 1, 1, 0.0, 0.0,
-								GridBagConstraints.LINE_END,
-								GridBagConstraints.NONE,
-								new Insets(0, 0, 0, 0), 0, 0));
-						precisionLabel.setText("precision");
-					}
-					{
+						configPanel.add(new JLabel("precision"),
+								new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
+										GridBagConstraints.LINE_END,
+										GridBagConstraints.NONE, new Insets(0,
+												0, 0, 0), 0, 0));
 						precisionSlider = new JSlider();
 						configPanel.add(precisionSlider,
 								new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
 										GridBagConstraints.CENTER,
 										GridBagConstraints.HORIZONTAL,
 										new Insets(0, 0, 0, 0), 0, 0));
-						precisionSlider.setMinimum(10);
-						precisionSlider.setMaximum(20);
+						precisionSlider.setMinimum(15);
+						precisionSlider.setMaximum(30);
+						precisionSlider.setValue(9);
 					}
 
 				}
@@ -226,7 +219,8 @@ public class DrawingFormX extends javax.swing.JFrame {
 				int yant = y;
 				x = e.getX();
 				y = e.getY();
-				if (xant != -1 && yant != -1 && (Math.abs(xant - x) > 1 || Math.abs(yant - y) > 1)) {
+				if (xant != -1 && yant != -1
+						&& (Math.abs(xant - x) > 1 || Math.abs(yant - y) > 1)) {
 					DrawingFormX.this.functionDrawer.moveWith(x - xant, y
 							- yant);
 				}
@@ -278,22 +272,23 @@ public class DrawingFormX extends javax.swing.JFrame {
 						functions.add((String) tm.getValueAt(i, 0));
 				}
 
-				functionDrawer.startDrawing(functions, -3, 5, getActualPrecsion());
+				functionDrawer.startDrawing(functions, -7, 7,
+						-7 , 7, getActualPrecsion());
 
 			}
 		});
-		
-		precisionSlider.addChangeListener(new ChangeListener() {			
+
+		precisionSlider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				functionDrawer.modifyPrecsion(getActualPrecsion());
-				
+
 			}
 		});
 	}
-	
-	private int getActualPrecsion(){
-		return (int)Math.pow(1.5,precisionSlider.getValue());
+
+	private int getActualPrecsion() {
+		return (int) Math.pow(1.2, precisionSlider.getValue());
 	}
 
 }
