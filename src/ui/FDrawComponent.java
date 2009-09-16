@@ -35,9 +35,9 @@ public class FDrawComponent extends JLabel {
 	 * @param xright
 	 *            right margin on x axis
 	 * @param yleft
-	 *            TODO
+	 *            left margin on y axis
 	 * @param yright
-	 *            TODO
+	 *            right margin on y axis
 	 * @param precision
 	 *            drawing precision
 	 */
@@ -67,9 +67,10 @@ public class FDrawComponent extends JLabel {
 	 * @param precision
 	 */
 	public void modifyPrecsion(int precision) {
-		// splitIntervals(xvalues[0], xvalues[xvalues.length - 1], precision);
-		// TODO
-		cworker.modifyXValues(xvalues);
+		splitIntervals(xvalues[0], xvalues[xvalues.length - 1], yvalues[0],
+				yvalues[yvalues.length - 1], precision);
+
+		cworker.modifyIntervals(xvalues, yvalues);
 	}
 
 	/**
@@ -98,9 +99,9 @@ public class FDrawComponent extends JLabel {
 
 		ybottom += ywith;
 
-		// splitIntervals(xvalues[0] - xwith, xvalues[xvalues.length - 1]
-		// - xwith, xvalues.length); TODO
-		cworker.modifyXValues(xvalues);
+		splitIntervals(xvalues[0] - xwith, xvalues[xvalues.length - 1] - xwith,
+				yvalues[0], yvalues[yvalues.length - 1], xvalues.length);
+		cworker.modifyIntervals(xvalues, yvalues);
 
 	}
 
@@ -111,10 +112,11 @@ public class FDrawComponent extends JLabel {
 	public void zoomOut() {
 		checkIfDrawing();
 		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		// splitIntervals(xvalues[0] - with, xvalues[xvalues.length - 1] + with,
-		// xvalues.length); TODO
+		splitIntervals(xvalues[0] - with, xvalues[xvalues.length - 1] + with,
+				yvalues[0] - with, yvalues[yvalues.length - 1] + with,
+				xvalues.length);
 
-		cworker.modifyXValues(xvalues);
+		cworker.modifyIntervals(xvalues, yvalues);
 
 	}
 
@@ -125,10 +127,11 @@ public class FDrawComponent extends JLabel {
 	public void zoomIn() {
 
 		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		// splitIntervals(xvalues[0] + with, xvalues[xvalues.length - 1] - with,
-		// xvalues.length); TODO
+		splitIntervals(xvalues[0] + with, xvalues[xvalues.length - 1] - with,
+				yvalues[0] + with, yvalues[yvalues.length - 1] - with,
+				xvalues.length);
 
-		cworker.modifyXValues(xvalues);
+		cworker.modifyIntervals(xvalues, yvalues);
 	}
 
 	/**
@@ -137,10 +140,11 @@ public class FDrawComponent extends JLabel {
 	 */
 	public void moveLeft() {
 		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		// splitIntervals(xvalues[0] - with, xvalues[xvalues.length - 1] - with,
-		// xvalues.length); TODO
+		splitIntervals(xvalues[0] - with, xvalues[xvalues.length - 1] - with,
+				yvalues[0] - with, yvalues[yvalues.length - 1] - with,
+				xvalues.length);
 
-		cworker.modifyXValues(xvalues);
+		cworker.modifyIntervals(xvalues, yvalues);
 	}
 
 	/**
@@ -149,10 +153,11 @@ public class FDrawComponent extends JLabel {
 	 */
 	public void moveRight() {
 		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		// splitIntervals(xvalues[0] + with, xvalues[xvalues.length - 1] + with,
-		// xvalues.length); TODO
+		splitIntervals(xvalues[0] + with, xvalues[xvalues.length - 1] + with,
+				yvalues[0] + with, yvalues[yvalues.length - 1] + with,
+				xvalues.length);
 
-		cworker.modifyXValues(xvalues);
+		cworker.modifyIntervals(xvalues, yvalues);
 	}
 
 	/**
@@ -258,9 +263,9 @@ public class FDrawComponent extends JLabel {
 					ay = yvalues[j];
 					az = matrix.getAt(i, j, 0);
 
-					cx = 1;
-					cy = 1;
-					cz = 1;
+					cx = 0;
+					cy = 0;
+					cz = 0;
 
 					ox = Math.PI / 32;
 					oy = Math.PI / 32;
@@ -303,17 +308,42 @@ public class FDrawComponent extends JLabel {
 
 				}
 			}
+
+			final int ASIMT = 3;
+
 			for (int i = 0; i < coordsx.length; ++i) {
 				for (int j = 1; j < coordsy.length; ++j) {
-					g.drawLine(coordsx[i][j - 1], coordsy[i][j - 1],
-							coordsx[i][j], coordsy[i][j]);
+					if (Math.abs(coordsx[i][j - 1] - coordsx[i][j]) < getWidth()
+							/ ASIMT
+							&& Math.abs(coordsy[i][j - 1] - coordsy[i][j]) < getHeight()
+									/ ASIMT
+							&& coordsx[i][j - 1] < getWidth()
+							&& coordsx[i][j - 1] > 0
+							&& coordsx[i][j] < getWidth()
+							&& coordsx[i][j] > 0
+							&& coordsy[i][j - 1] < getHeight()
+							&& coordsy[i][j - 1] > 0
+							&& coordsy[i][j] < getHeight() && coordsy[i][j] > 0)
+						g.drawLine(coordsx[i][j - 1], coordsy[i][j - 1],
+								coordsx[i][j], coordsy[i][j]);
 				}
 			}
 
 			for (int i = 1; i < coordsy.length; ++i) {
 				for (int j = 0; j < coordsx.length; ++j) {
-					g.drawLine(coordsx[i - 1][j], coordsy[i - 1][j],
-							coordsx[i][j], coordsy[i][j]);
+					if (Math.abs(coordsx[i - 1][j] - coordsx[i][j]) < getWidth()
+							/ ASIMT
+							&& Math.abs(coordsy[i - 1][j] - coordsy[i][j]) < getHeight()
+									/ ASIMT
+							&& coordsx[i - 1][j] < getWidth()
+							&& coordsx[i - 1][j] > 0
+							&& coordsx[i][j] < getWidth()
+							&& coordsx[i][j] > 0
+							&& coordsy[i - 1][j] < getHeight()
+							&& coordsy[i - 1][j] > 0
+							&& coordsy[i][j] < getHeight() && coordsy[i][j] > 0)
+						g.drawLine(coordsx[i - 1][j], coordsy[i - 1][j],
+								coordsx[i][j], coordsy[i][j]);
 				}
 			}
 		}
@@ -452,8 +482,10 @@ public class FDrawComponent extends JLabel {
 			calculate = false;
 		}
 
-		public synchronized void modifyXValues(double xvalues[]) {
+		public synchronized void modifyIntervals(double xvalues[],
+				double[] yvalues) {
 			varMap.put("x", xvalues.clone());
+			varMap.put("y", yvalues.clone());
 		}
 
 	}
