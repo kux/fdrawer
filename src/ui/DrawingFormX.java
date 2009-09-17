@@ -39,6 +39,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 	private JTable functionTable;
 	private JPanel configPanel;
 	private FDrawComponent functionDrawer;
+	private JTable threeDTable;
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -68,13 +69,19 @@ public class DrawingFormX extends javax.swing.JFrame {
 					configPanel = new JPanel();
 					GridBagLayout configPanelLayout = new GridBagLayout();
 					configPanelLayout.rowWeights = new double[] { 0.0, 0.0,
-							0.0, 0.0, 0.1, 0.0 };
+							0.0, 0.0, 0.0, 0.0, 0.1 };
 					configPanelLayout.rowHeights = new int[] { 10, 98, 20, 20,
-							105, 10 };
+							50, 35, 10 };
+
+					assert configPanelLayout.rowWeights.length == configPanelLayout.rowHeights.length;
+
 					configPanelLayout.columnWeights = new double[] { 0.0, 0.0,
 							0.0, 0.1 };
 					configPanelLayout.columnWidths = new int[] { 10, 90, 130,
 							10 };
+
+					assert configPanelLayout.columnWeights.length == configPanelLayout.columnWidths.length;
+
 					mainPanel.add(configPanel, BorderLayout.WEST);
 					configPanel.setLayout(configPanelLayout);
 					configPanel.setPreferredSize(new java.awt.Dimension(240,
@@ -93,7 +100,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 										"draw" };
 
 								private Object[][] data = {
-										{ "3+sin(x+t)/2+cos(y+t)/2", new Boolean(true) },
+										{ "1" + "", new Boolean(true) },
 										{ "sin(x+t/2)*pow(x,2)",
 												new Boolean(false) },
 										{ "cos(x+t/4)*pow(x,2)",
@@ -171,7 +178,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 										new Insets(0, 0, 0, 0), 0, 0));
 						precisionSlider.setMinimum(15);
 						precisionSlider.setMaximum(30);
-						precisionSlider.setValue(9);
+						precisionSlider.setValue(20);
 					}
 
 				}
@@ -219,10 +226,9 @@ public class DrawingFormX extends javax.swing.JFrame {
 				int yant = y;
 				x = e.getX();
 				y = e.getY();
-				if (xant != -1 && yant != -1
-						&& (Math.abs(xant - x) > 1 || Math.abs(yant - y) > 1)) {
-					DrawingFormX.this.functionDrawer.moveWith(x - xant, y
-							- yant);
+				if (xant != -1 && yant != -1) {
+					DrawingFormX.this.functionDrawer.modifAngles(
+							(double)(y - yant) / 100, (double)(x - xant) / 100);
 				}
 
 			}
@@ -272,8 +278,8 @@ public class DrawingFormX extends javax.swing.JFrame {
 						functions.add((String) tm.getValueAt(i, 0));
 				}
 
-				functionDrawer.startDrawing(functions, -7, 7,
-						-7 , 7, getActualPrecsion());
+				functionDrawer.startDrawing(functions, 5, new double[] {
+						Math.PI/2, -Math.PI, 0 }, getActualPrecsion());
 
 			}
 		});

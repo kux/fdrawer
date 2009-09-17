@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import javax.swing.SwingWorker.StateValue;
 
 import model.FunctionEvaluator;
 import model.Matrix;
@@ -26,28 +27,23 @@ public class FDrawComponent extends JLabel {
 	private boolean drawingStarted = false;
 
 	/**
-	 * start drawing in this component
 	 * 
 	 * @param functions
-	 *            functions to draw
-	 * @param xleft
-	 *            left margin on x axis
-	 * @param xright
-	 *            right margin on x axis
-	 * @param yleft
-	 *            left margin on y axis
-	 * @param yright
-	 *            right margin on y axis
+	 * @param distance
+	 * @param rotation
 	 * @param precision
-	 *            drawing precision
 	 */
-	public void startDrawing(List<String> functions, double xleft,
-			double xright, double yleft, double yright, int precision) {
+	public void startDrawing(List<String> functions, double distance,
+			double[] rotation, int precision) {
 
 		// in case this is a actually a "redraw"
 		stopDrawing();
 
-		splitIntervals(xleft, xright, yleft, yright, precision);
+		this.rotation = rotation;
+		this.distance = distance;
+
+		calculate3D();
+		splitIntervals(precision);
 
 		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
 		varMap.put("x", this.xvalues);
@@ -60,6 +56,19 @@ public class FDrawComponent extends JLabel {
 
 	}
 
+	private void calculate3D() {
+		this.eye = new double[] { 0, 0, distance };
+
+		camera[2] = Math.sqrt(Math.pow(distance, 2)
+				/ (1 + Math.pow(Math.tan(rotation[0]), 2) + Math.pow(Math
+						.tan(rotation[1]), 2)));
+
+		camera[0] = camera[2] * Math.tan(rotation[0]);
+		camera[1] = camera[2] * Math.tan(rotation[1]);
+
+
+	}
+
 	/**
 	 * modify drawing precsion<br>
 	 * can be done while drawing is in progress
@@ -67,8 +76,8 @@ public class FDrawComponent extends JLabel {
 	 * @param precision
 	 */
 	public void modifyPrecsion(int precision) {
-		splitIntervals(xvalues[0], xvalues[xvalues.length - 1], yvalues[0],
-				yvalues[yvalues.length - 1], precision);
+		checkIfDrawing();
+		splitIntervals(precision);
 
 		cworker.modifyIntervals(xvalues, yvalues);
 	}
@@ -83,26 +92,12 @@ public class FDrawComponent extends JLabel {
 
 	}
 
-	/**
-	 * 
-	 * @param xdif
-	 * @param ydif
-	 * @throws IllegalStateException
-	 *             if no drawing is in progress
-	 */
-	public void moveWith(int xdif, int ydif) {
+	public void modifAngles(double x, double y) {
+		rotation[0] += x;
+		rotation[1] += y;
+
+		calculate3D();
 		checkIfDrawing();
-		double pixelRange = (xvalues[xvalues.length - 1] - xvalues[0])
-				/ getWidth();
-		double xwith = xdif * pixelRange;
-		double ywith = ydif * pixelRange;
-
-		ybottom += ywith;
-
-		splitIntervals(xvalues[0] - xwith, xvalues[xvalues.length - 1] - xwith,
-				yvalues[0], yvalues[yvalues.length - 1], xvalues.length);
-		cworker.modifyIntervals(xvalues, yvalues);
-
 	}
 
 	/**
@@ -111,11 +106,9 @@ public class FDrawComponent extends JLabel {
 	 */
 	public void zoomOut() {
 		checkIfDrawing();
-		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		splitIntervals(xvalues[0] - with, xvalues[xvalues.length - 1] + with,
-				yvalues[0] - with, yvalues[yvalues.length - 1] + with,
-				xvalues.length);
-
+		distance += distance / REDCOEF;
+		calculate3D();
+		splitIntervals(xvalues.length);
 		cworker.modifyIntervals(xvalues, yvalues);
 
 	}
@@ -126,58 +119,23 @@ public class FDrawComponent extends JLabel {
 	 */
 	public void zoomIn() {
 
-		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		splitIntervals(xvalues[0] + with, xvalues[xvalues.length - 1] - with,
-				yvalues[0] + with, yvalues[yvalues.length - 1] - with,
-				xvalues.length);
-
+		checkIfDrawing();
+		distance -= distance / REDCOEF;
+		calculate3D();
+		splitIntervals(xvalues.length);
 		cworker.modifyIntervals(xvalues, yvalues);
 	}
 
-	/**
-	 * @throws IllegalStateException
-	 *             if no drawing is in progress
-	 */
-	public void moveLeft() {
-		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		splitIntervals(xvalues[0] - with, xvalues[xvalues.length - 1] - with,
-				yvalues[0] - with, yvalues[yvalues.length - 1] - with,
-				xvalues.length);
-
-		cworker.modifyIntervals(xvalues, yvalues);
+	public void setCamera(double[] camera) {
+		this.camera = camera;
 	}
 
-	/**
-	 * @throws IllegalStateException
-	 *             if no drawing is in progress
-	 */
-	public void moveRight() {
-		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		splitIntervals(xvalues[0] + with, xvalues[xvalues.length - 1] + with,
-				yvalues[0] + with, yvalues[yvalues.length - 1] + with,
-				xvalues.length);
-
-		cworker.modifyIntervals(xvalues, yvalues);
+	public void setRotation(double[] rotation) {
+		this.rotation = rotation;
 	}
 
-	/**
-	 * @throws IllegalStateException
-	 *             if no drawing is in progress
-	 */
-	public void moveUp() {
-		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		double ywith = with * getHeight() / getWidth();
-		ybottom += ywith;
-	}
-
-	/**
-	 * @throws IllegalStateException
-	 *             if no drawing is in progress
-	 */
-	public void moveDown() {
-		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
-		double ywith = with * getHeight() / getWidth();
-		ybottom -= ywith;
+	public void setEye(double[] eye) {
+		this.eye = eye;
 	}
 
 	/**
@@ -185,35 +143,20 @@ public class FDrawComponent extends JLabel {
 	 *             if no drawing is in progress
 	 */
 	private void checkIfDrawing() {
-		if (!this.drawingStarted)
+		if (cworker.getState() == StateValue.PENDING)
 			throw new IllegalStateException("Drawing not started");
 	}
 
-	private static final double REDCOEF = 50;
-
-	// private int xvalues.length = 1000;
-
-	private double ybottom = -2;
-	private double xvalues[];
-	private double yvalues[];
-
-	private double timeStart = 0;
-	private double timeIncrement = 0.1;
-
-	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
-	private CalculateWorker cworker = null;
-
-	private void splitIntervals(double xleft, double xright, double yleft,
-			double yright, int precision) {
+	private void splitIntervals(int precision) {
 
 		xvalues = new double[precision];
 		yvalues = new double[precision];
-		double xincrement = (xright - xleft) / precision;
-		double yincrement = (yright - yleft) / precision;
+		double xincrement = (2 * distance) / (precision - 1);
+		double yincrement = (2 * distance) / (precision - 1);
 
 		for (int i = 0; i < precision; ++i) {
-			this.xvalues[i] = xleft + xincrement * i;
-			this.yvalues[i] = yleft + yincrement * i;
+			this.xvalues[i] = -distance + xincrement * i;
+			this.yvalues[i] = -distance + yincrement * i;
 		}
 
 	}
@@ -222,6 +165,48 @@ public class FDrawComponent extends JLabel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		draw3dGraphs(g);
+	}
+
+	private double[] translate(double a[], double[] c, double[] o) {
+
+		double dx = Math.cos(o[1])
+				* (Math.sin(o[2]) * (a[1] - c[1]) + Math.cos(o[2])
+						* (a[0] - c[0])) - Math.sin(o[1]) * (a[2] - c[2]);
+
+		double dy = Math.sin(o[0])
+				* (Math.cos(o[1]) * (a[2] - c[2]) + Math.sin(o[1])
+						* (Math.sin(o[2]) * (a[1] - c[1]) + Math.cos(o[2])
+								* (a[0] - c[0])))
+				+ Math.cos(o[0])
+				* (Math.cos(o[2]) * (a[1] - c[1]) - Math.sin(o[2])
+						* (a[0] - c[0]));
+
+		double dz = Math.cos(o[0])
+				* (Math.cos(o[1]) * (a[2] - c[2]) + Math.sin(o[1])
+						* (Math.sin(o[2]) * (a[1] - c[1]) + Math.cos(o[2])
+								* (a[0] - c[0])))
+				- Math.sin(o[0])
+				* (Math.cos(o[2]) * (a[1] - c[1]) - Math.sin(o[2])
+						* (a[0] - c[0]));
+
+		return new double[] { dx, dy, dz };
+
+	}
+
+	private double[] project(double d[], double[] e) {
+		double bx = (d[0] - e[0]) * (e[2] / d[2]);
+		double by = (d[1] - e[1]) * (e[2] / d[2]);
+
+		return new double[] { bx, by };
+	}
+
+	private int[] calcualteOnScreen(double[] projected, double pixelRangeX,
+			double pixelRangeY) {
+		int coordx = (int) (projected[0] / pixelRangeX)
+				- (int) (xvalues[0] / pixelRangeX);
+		int coordy = getHeight()
+				- ((int) (projected[1] / pixelRangeY) - (int) (yvalues[0] / pixelRangeY));
+		return new int[] { coordx, coordy };
 	}
 
 	private void draw3dGraphs(Graphics g) {
@@ -243,8 +228,6 @@ public class FDrawComponent extends JLabel {
 		int[][] coordsx = new int[xvalues.length][yvalues.length];
 		int[][] coordsy = new int[xvalues.length][yvalues.length];
 
-		double ax, ay, az, cx, cy, cz, ox, oy, oz, dx, dy, dz, ex, ey, ez, bx, by;
-
 		for (Matrix<Double> matrix : matrixesToDraw) {
 
 			// matrix.getMatrixSize()[0] - x axis values on the result matrix
@@ -259,71 +242,26 @@ public class FDrawComponent extends JLabel {
 
 			for (int i = 0; i < xvalues.length; ++i) {
 				for (int j = 0; j < yvalues.length; ++j) {
-					ax = xvalues[i];
-					ay = yvalues[j];
-					az = matrix.getAt(i, j, 0);
 
-					cx = 0;
-					cy = 0;
-					cz = 0;
+					double translated[] = translate(new double[] { xvalues[i],
+							yvalues[j], matrix.getAt(i, j, 0) }, camera,
+							rotation);
 
-					ox = Math.PI / 32;
-					oy = Math.PI / 32;
-					oz = Math.PI / 32;
+					double projected[] = project(translated, eye);
 
-					dx = Math.cos(oy)
-							* (Math.sin(oz) * (ay - cy) + Math.cos(oz)
-									* (ax - cx)) - Math.sin(oy) * (az - cz);
+					int[] coord = calcualteOnScreen(projected, pixelRangeX,
+							pixelRangeY);
 
-					dy = Math.sin(ox)
-							* (Math.cos(oy) * (az - cz) + Math.sin(oy)
-									* (Math.sin(oz) * (ay - cy) + Math.cos(oz)
-											* (ax - cx)))
-							+ Math.cos(ox)
-							* (Math.cos(oz) * (ay - cy) - Math.sin(oz)
-									* (ax - cx));
-
-					dz = Math.cos(ox)
-							* (Math.cos(oy) * (az - cz) + Math.sin(oy)
-									* (Math.sin(oz) * (ay - cy) + Math.cos(oz)
-											* (ax - cx)))
-							- Math.sin(ox)
-							* (Math.cos(oz) * (ay - cy) - Math.sin(oz)
-									* (ax - cx));
-
-					ex = 0;
-					ey = 0;
-					ez = 5;
-
-					bx = (dx - ex) * (1 / (ez - dz));
-					by = (dy - ey) * (1 / (ez - dz));
-
-					int coordx = (int) (bx / pixelRangeX)
-							- (int) (xvalues[0] / pixelRangeX);
-					int coordy = getHeight()
-							- ((int) (by / pixelRangeY) - (int) (yvalues[0] / pixelRangeY));
-
-					coordsx[i][j] = coordx;
-					coordsy[i][j] = coordy;
+					coordsx[i][j] = coord[0];
+					coordsy[i][j] = coord[1];
 
 				}
 			}
 
-			final int ASIMT = 3;
-
 			for (int i = 0; i < coordsx.length; ++i) {
 				for (int j = 1; j < coordsy.length; ++j) {
-					if (Math.abs(coordsx[i][j - 1] - coordsx[i][j]) < getWidth()
-							/ ASIMT
-							&& Math.abs(coordsy[i][j - 1] - coordsy[i][j]) < getHeight()
-									/ ASIMT
-							&& coordsx[i][j - 1] < getWidth()
-							&& coordsx[i][j - 1] > 0
-							&& coordsx[i][j] < getWidth()
-							&& coordsx[i][j] > 0
-							&& coordsy[i][j - 1] < getHeight()
-							&& coordsy[i][j - 1] > 0
-							&& coordsy[i][j] < getHeight() && coordsy[i][j] > 0)
+					if (onScreen(coordsx[i][j - 1], coordsy[i][j - 1],
+							coordsx[i][j], coordsy[i][j]))
 						g.drawLine(coordsx[i][j - 1], coordsy[i][j - 1],
 								coordsx[i][j], coordsy[i][j]);
 				}
@@ -331,78 +269,26 @@ public class FDrawComponent extends JLabel {
 
 			for (int i = 1; i < coordsy.length; ++i) {
 				for (int j = 0; j < coordsx.length; ++j) {
-					if (Math.abs(coordsx[i - 1][j] - coordsx[i][j]) < getWidth()
-							/ ASIMT
-							&& Math.abs(coordsy[i - 1][j] - coordsy[i][j]) < getHeight()
-									/ ASIMT
-							&& coordsx[i - 1][j] < getWidth()
-							&& coordsx[i - 1][j] > 0
-							&& coordsx[i][j] < getWidth()
-							&& coordsx[i][j] > 0
-							&& coordsy[i - 1][j] < getHeight()
-							&& coordsy[i - 1][j] > 0
-							&& coordsy[i][j] < getHeight() && coordsy[i][j] > 0)
+					if (onScreen(coordsx[i - 1][j], coordsy[i - 1][j],
+							coordsx[i][j], coordsy[i][j])) {
 						g.drawLine(coordsx[i - 1][j], coordsy[i - 1][j],
 								coordsx[i][j], coordsy[i][j]);
+					}
+
 				}
 			}
 		}
 
 	}
 
-	private void draw2dGraphs(Graphics g) {
+	private boolean onScreen(int x1, int y1, int x2, int y2) {
+		final int asimtCheck = 3;
 
-		// if drawing not started yet, do nothing
-		if (!drawingStarted)
-			return;
+		return (Math.abs(x1 - x2) < getWidth() / asimtCheck
+				&& Math.abs(y1 - y2) < getHeight() / asimtCheck
+				&& x1 < getWidth() && x1 > 0 && x2 < getWidth() && x2 > 0
+				&& y1 < getHeight() && y1 > 0 && y2 < getHeight() && y2 > 0);
 
-		drawAxis(g);
-
-		double pixelRange = (xvalues[xvalues.length - 1] - xvalues[0])
-				/ getWidth();
-		Random rand = new Random(10);
-
-		for (Matrix<Double> matrix : matrixesToDraw) {
-
-			// matrix.getMatrixSize()[0] - x axis values on the result matrix
-			// skip if precision was changed and matrixes received from the
-			// calculating worker are no
-			// longer consistent
-			if (matrix.getMatrixSize()[0] != xvalues.length)
-				break;
-
-			g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
-					.nextFloat()));
-
-			int xant = -1000, yant = -1000;
-
-			for (int i = 0; i < xvalues.length - 1; i++) {
-				int x = (int) ((xvalues[i] - xvalues[0]) / pixelRange);
-				double rez = matrix.getAt(i, 0);
-				int y = getHeight()
-						- ((int) (rez / pixelRange) - (int) (this.ybottom / pixelRange));
-
-				if (Math.abs(xant - x) < this.getWidth() / 3
-						&& Math.abs(yant - y) < getHeight() / 3)
-					g.drawLine(xant, yant, x, y);
-				xant = x;
-				yant = y;
-			}
-		}
-	}
-
-	private void drawAxis(Graphics g) {
-		g.setColor(Color.GRAY);
-		double inc = (xvalues[xvalues.length - 1] - xvalues[0]) / getWidth();
-		if (xvalues[0] < 0 && xvalues[xvalues.length - 1] > 0) {
-			int yaxis = (int) ((-xvalues[0]) / inc);
-			g.drawLine(yaxis, 0, yaxis, getHeight());
-		}
-
-		if (ybottom + inc * getHeight() > 0) {
-			int xaxis = getHeight() + (int) (ybottom / inc);
-			g.drawLine(0, xaxis, getWidth(), xaxis);
-		}
 	}
 
 	private class CalculateWorker extends
@@ -460,6 +346,8 @@ public class FDrawComponent extends JLabel {
 		protected void process(List<List<Matrix<Double>>> matrixes) {
 			matrixesToDraw = matrixes.get(matrixes.size() - 1);
 			repaint();
+			if (matrixes.size() > 5)
+				matrixes.clear();
 		}
 
 		@Override
@@ -509,5 +397,23 @@ public class FDrawComponent extends JLabel {
 		}
 		return evaluators;
 	}
+
+	private static final double REDCOEF = 50;
+
+	// private int xvalues.length = 1000;
+
+	private double xvalues[];
+	private double yvalues[];
+	private double distance;
+
+	private double camera[] = new double[] { 0, 0, 0 };
+	private double rotation[] = new double[] { 0, 0, 0 };
+	private double eye[] = new double[] { 0, 0, 5 };
+
+	private double timeStart = 0;
+	private double timeIncrement = 0.1;
+
+	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
+	private CalculateWorker cworker = null;
 
 }
