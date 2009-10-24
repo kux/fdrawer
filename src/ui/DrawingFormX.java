@@ -39,7 +39,6 @@ public class DrawingFormX extends javax.swing.JFrame {
 	private JTable functionTable;
 	private JPanel configPanel;
 	private FDrawComponent functionDrawer;
-	private JTable threeDTable;
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -87,6 +86,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 					configPanel.setPreferredSize(new java.awt.Dimension(240,
 							350));
 					{
+						
 						functionScroll = new JScrollPane();
 						configPanel.add(functionScroll, new GridBagConstraints(
 								1, 1, 2, 1, 0.0, 0.0,
@@ -100,7 +100,8 @@ public class DrawingFormX extends javax.swing.JFrame {
 										"draw" };
 
 								private Object[][] data = {
-										{ "1" + "", new Boolean(true) },
+										{ "sin(x+t)+cos(y+t)",
+												new Boolean(true) },
 										{ "sin(x+t/2)*pow(x,2)",
 												new Boolean(false) },
 										{ "cos(x+t/4)*pow(x,2)",
@@ -130,7 +131,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 								}
 
 								@Override
-								public Class getColumnClass(int c) {
+								public Class<?> getColumnClass(int c) {
 									return getValueAt(0, c).getClass();
 								}
 
@@ -181,6 +182,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 						precisionSlider.setValue(20);
 					}
 
+
 				}
 				{
 					drawingPanel = new JPanel();
@@ -228,7 +230,8 @@ public class DrawingFormX extends javax.swing.JFrame {
 				y = e.getY();
 				if (xant != -1 && yant != -1) {
 					DrawingFormX.this.functionDrawer.modifAngles(
-							(double)(y - yant) / 100, (double)(x - xant) / 100);
+							(double) (y - yant) / 100,
+							(double) (x - xant) / 100);
 				}
 
 			}
@@ -279,7 +282,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 				}
 
 				functionDrawer.startDrawing(functions, 5, new double[] {
-						Math.PI/2, -Math.PI, 0 }, getActualPrecsion());
+						Math.PI / 2, -Math.PI / 4, 0 }, getActualPrecsion());
 
 			}
 		});

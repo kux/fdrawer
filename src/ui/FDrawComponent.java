@@ -66,7 +66,6 @@ public class FDrawComponent extends JLabel {
 		camera[0] = camera[2] * Math.tan(rotation[0]);
 		camera[1] = camera[2] * Math.tan(rotation[1]);
 
-
 	}
 
 	/**
@@ -76,10 +75,11 @@ public class FDrawComponent extends JLabel {
 	 * @param precision
 	 */
 	public void modifyPrecsion(int precision) {
-		checkIfDrawing();
-		splitIntervals(precision);
+		if (cworker != null) {
+			splitIntervals(precision);
 
-		cworker.modifyIntervals(xvalues, yvalues);
+			cworker.modifyIntervals(xvalues, yvalues);
+		}
 	}
 
 	/**
@@ -93,11 +93,13 @@ public class FDrawComponent extends JLabel {
 	}
 
 	public void modifAngles(double x, double y) {
-		rotation[0] += x;
-		rotation[1] += y;
+		if (cworker != null) {
+			rotation[0] += x;
+			rotation[1] += y;
 
-		calculate3D();
-		checkIfDrawing();
+			calculate3D();
+		}
+
 	}
 
 	/**
@@ -105,11 +107,12 @@ public class FDrawComponent extends JLabel {
 	 *             if no drawing is in progress
 	 */
 	public void zoomOut() {
-		checkIfDrawing();
-		distance += distance / REDCOEF;
-		calculate3D();
-		splitIntervals(xvalues.length);
-		cworker.modifyIntervals(xvalues, yvalues);
+		if (cworker != null) {
+			distance += distance / REDCOEF;
+			calculate3D();
+			splitIntervals(xvalues.length);
+			cworker.modifyIntervals(xvalues, yvalues);
+		}
 
 	}
 
@@ -119,11 +122,12 @@ public class FDrawComponent extends JLabel {
 	 */
 	public void zoomIn() {
 
-		checkIfDrawing();
-		distance -= distance / REDCOEF;
-		calculate3D();
-		splitIntervals(xvalues.length);
-		cworker.modifyIntervals(xvalues, yvalues);
+		if (cworker != null) {
+			distance -= distance / REDCOEF;
+			calculate3D();
+			splitIntervals(xvalues.length);
+			cworker.modifyIntervals(xvalues, yvalues);
+		}
 	}
 
 	public void setCamera(double[] camera) {
@@ -136,15 +140,6 @@ public class FDrawComponent extends JLabel {
 
 	public void setEye(double[] eye) {
 		this.eye = eye;
-	}
-
-	/**
-	 * @throws IllegalStateException
-	 *             if no drawing is in progress
-	 */
-	private void checkIfDrawing() {
-		if (cworker.getState() == StateValue.PENDING)
-			throw new IllegalStateException("Drawing not started");
 	}
 
 	private void splitIntervals(int precision) {
