@@ -197,7 +197,7 @@ public class FDrawComponent extends JLabel implements MayDrawFunctions {
 		return new double[] { bx, by };
 	}
 
-	private int[] calcualteOnScreen(double[] projected, double pixelRangeX,
+	private int[] calculateOnScreen(double[] projected, double pixelRangeX,
 			double pixelRangeY) {
 		int coordx = (int) (projected[0] / pixelRangeX)
 				- (int) (xvalues[0] / pixelRangeX);
@@ -219,6 +219,8 @@ public class FDrawComponent extends JLabel implements MayDrawFunctions {
 
 		double pixelRangeY = (yvalues[yvalues.length - 1] - yvalues[0])
 				/ getHeight();
+
+		drawAxis(g, pixelRangeX, pixelRangeY);
 
 		Random rand = new Random(10);
 
@@ -246,7 +248,7 @@ public class FDrawComponent extends JLabel implements MayDrawFunctions {
 
 					double projected[] = project(translated, eye);
 
-					int[] coord = calcualteOnScreen(projected, pixelRangeX,
+					int[] coord = calculateOnScreen(projected, pixelRangeX,
 							pixelRangeY);
 
 					coordsx[i][j] = coord[0];
@@ -278,6 +280,33 @@ public class FDrawComponent extends JLabel implements MayDrawFunctions {
 
 	}
 
+	private void drawAxis(Graphics g, double pixelRangeX, double pixelRangeY) {
+
+		int[] origin = calculateOnScreen(project(translate(new double[] { 0, 0,
+				0 }, camera, rotation), eye), pixelRangeX, pixelRangeY);
+
+		int[] xmargin = calculateOnScreen(project(translate(new double[] {
+				distance / 2, 0, 0 }, camera, rotation), eye), pixelRangeX,
+				pixelRangeY);
+
+		int[] ymargin = calculateOnScreen(project(translate(new double[] { 0,
+				distance / 2, 0 }, camera, rotation), eye), pixelRangeX,
+				pixelRangeY);
+
+		int[] zmargin = calculateOnScreen(project(translate(new double[] { 0,
+				0, distance / 2 }, camera, rotation), eye), pixelRangeX,
+				pixelRangeY);
+
+		g.drawRect(origin[0], origin[1], 2, 2);
+		g.setColor(Color.RED);
+		g.drawLine(origin[0], origin[1], xmargin[0], xmargin[1]);
+		g.setColor(Color.GREEN);
+		g.drawLine(origin[0], origin[1], ymargin[0], ymargin[1]);
+		g.setColor(Color.BLUE);
+		g.drawLine(origin[0], origin[1], zmargin[0], zmargin[1]);
+
+	}
+
 	private boolean onScreen(int x1, int y1, int x2, int y2) {
 		final int asimtCheck = 3;
 
@@ -287,7 +316,6 @@ public class FDrawComponent extends JLabel implements MayDrawFunctions {
 				&& y1 < getHeight() && y1 > 0 && y2 < getHeight() && y2 > 0);
 
 	}
-
 
 	private List<FunctionEvaluator> createEvaluators(List<String> functions) {
 
