@@ -5,14 +5,10 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
-import javax.swing.SwingWorker.StateValue;
 
 import model.FunctionEvaluator;
 import model.Matrix;
@@ -22,7 +18,7 @@ import org.antlr.runtime.RecognitionException;
 import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
-public class FDrawComponent extends JLabel {
+public class FDrawComponent extends JLabel implements MayDrawFunctions {
 
 	private boolean drawingStarted = false;
 
@@ -49,7 +45,8 @@ public class FDrawComponent extends JLabel {
 		varMap.put("x", this.xvalues);
 		varMap.put("y", this.yvalues);
 
-		cworker = new CalculateWorker(createEvaluators(functions), varMap);
+		cworker = new CalculatingWorker(createEvaluators(functions), varMap, 0,
+				0.1, this);
 		cworker.execute();
 
 		this.drawingStarted = true;
@@ -140,6 +137,11 @@ public class FDrawComponent extends JLabel {
 
 	public void setEye(double[] eye) {
 		this.eye = eye;
+	}
+
+	public void drawMatrixes(List<Matrix<Double>> toDraw) {
+		this.matrixesToDraw = toDraw;
+		repaint();
 	}
 
 	private void splitIntervals(int precision) {
@@ -286,92 +288,6 @@ public class FDrawComponent extends JLabel {
 
 	}
 
-	private class CalculateWorker extends
-			SwingWorker<Void, List<Matrix<Double>>> {
-
-		private final List<FunctionEvaluator> evaluators;
-		private final LinkedHashMap<String, double[]> varMap;
-		private volatile boolean calculate = true;
-
-		private CalculateWorker(List<FunctionEvaluator> evaluators,
-				LinkedHashMap<String, double[]> varMap) {
-			this.evaluators = evaluators;
-			// copy the received map, this makes this class completely
-			// thread-safe
-			this.varMap = deepCopyLinkedHashMap(varMap);
-		}
-
-		private LinkedHashMap<String, double[]> deepCopyLinkedHashMap(
-				LinkedHashMap<String, double[]> mapToCopy) {
-			LinkedHashMap<String, double[]> newMap = new LinkedHashMap<String, double[]>();
-
-			for (Map.Entry<String, double[]> entry : mapToCopy.entrySet()) {
-				newMap.put(entry.getKey(), entry.getValue().clone());
-			}
-			return newMap;
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		protected Void doInBackground() throws Exception {
-			double time = timeStart;
-
-			while (calculate) {
-
-				synchronized (this) {
-					varMap.put("t", new double[] { time });
-				}
-
-				List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
-				for (FunctionEvaluator feval : evaluators) {
-
-					synchronized (this) {
-						results.add(feval.calculate(varMap));
-					}
-
-				}
-				publish(results);
-				time += timeIncrement;
-			}
-
-			return null;
-		}
-
-		@Override
-		protected void process(List<List<Matrix<Double>>> matrixes) {
-			matrixesToDraw = matrixes.get(matrixes.size() - 1);
-			repaint();
-			if (matrixes.size() > 5)
-				matrixes.clear();
-		}
-
-		@Override
-		protected void done() {
-			try {
-				get();
-			} catch (InterruptedException e) {
-				e.printStackTrace(); // can't happen
-			} catch (ExecutionException e) {
-				JOptionPane.showMessageDialog(FDrawComponent.this,
-						"Incorrect function\n" + e.getMessage()
-								+ "\nOnly x, t variables are supported !!",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				stopDrawing();
-
-			}
-		}
-
-		public void stop() {
-			calculate = false;
-		}
-
-		public synchronized void modifyIntervals(double xvalues[],
-				double[] yvalues) {
-			varMap.put("x", xvalues.clone());
-			varMap.put("y", yvalues.clone());
-		}
-
-	}
 
 	private List<FunctionEvaluator> createEvaluators(List<String> functions) {
 
@@ -405,10 +321,7 @@ public class FDrawComponent extends JLabel {
 	private double rotation[] = new double[] { 0, 0, 0 };
 	private double eye[] = new double[] { 0, 0, 5 };
 
-	private double timeStart = 0;
-	private double timeIncrement = 0.1;
-
 	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
-	private CalculateWorker cworker = null;
+	private CalculatingWorker cworker = null;
 
 }

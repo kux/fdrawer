@@ -86,7 +86,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 					configPanel.setPreferredSize(new java.awt.Dimension(240,
 							350));
 					{
-						
+
 						functionScroll = new JScrollPane();
 						configPanel.add(functionScroll, new GridBagConstraints(
 								1, 1, 2, 1, 0.0, 0.0,
@@ -143,9 +143,21 @@ public class DrawingFormX extends javax.swing.JFrame {
 								@Override
 								public void setValueAt(Object value, int row,
 										int col) {
-									data[row][col] = value;
-									fireTableCellUpdated(row, col);
+									if (col == 1) {
+										for (int i = 0; i < data.length; ++i) {
+											data[i][1] = Boolean.FALSE;
+											if (i == row) {
+												data[i][1] = value;
+											}
+											fireTableCellUpdated(i, col);
+										}
+										requestDrawing();
+									} else {
+										data[row][col] = value;
+										fireTableCellUpdated(row, col);
+									}
 								}
+
 							};
 
 							functionTable = new JTable();
@@ -181,7 +193,6 @@ public class DrawingFormX extends javax.swing.JFrame {
 						precisionSlider.setMaximum(30);
 						precisionSlider.setValue(20);
 					}
-
 
 				}
 				{
@@ -274,15 +285,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 		drawButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				TableModel tm = functionTable.getModel();
-				List<String> functions = new ArrayList<String>();
-				for (int i = 0; i < tm.getRowCount(); ++i) {
-					if ((Boolean) tm.getValueAt(i, 1))
-						functions.add((String) tm.getValueAt(i, 0));
-				}
-
-				functionDrawer.startDrawing(functions, 5, new double[] {
-						Math.PI / 2, -Math.PI / 4, 0 }, getActualPrecsion());
+				requestDrawing();
 
 			}
 		});
@@ -298,6 +301,18 @@ public class DrawingFormX extends javax.swing.JFrame {
 
 	private int getActualPrecsion() {
 		return (int) Math.pow(1.2, precisionSlider.getValue());
+	}
+
+	private void requestDrawing() {
+		TableModel tm = functionTable.getModel();
+		List<String> functions = new ArrayList<String>();
+		for (int i = 0; i < tm.getRowCount(); ++i) {
+			if ((Boolean) tm.getValueAt(i, 1))
+				functions.add((String) tm.getValueAt(i, 0));
+		}
+
+		functionDrawer.startDrawing(functions, 5, new double[] { Math.PI / 2,
+				-Math.PI / 4, 0 }, getActualPrecsion());
 	}
 
 }
