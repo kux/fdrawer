@@ -21,11 +21,11 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 	private double timeStart;
 	private double timeIncrement;
 
-	private MayDrawFunctions drawer;
+	private DrawsFunctions drawer;
 
 	public CalculatingWorker(List<FunctionEvaluator> evaluators,
 			LinkedHashMap<String, double[]> varMap, double timeStart,
-			double timeIncrement, MayDrawFunctions drawer) {
+			double timeIncrement, DrawsFunctions drawer) {
 		this.evaluators = evaluators;
 		// copy the received map, this makes this class completely
 		// thread-safe

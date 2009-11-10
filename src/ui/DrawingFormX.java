@@ -2,9 +2,6 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -15,6 +12,8 @@ import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -66,20 +65,8 @@ public class DrawingFormX extends javax.swing.JFrame {
 				mainPanel.setLayout(mainPanelLayout);
 				{
 					configPanel = new JPanel();
-					GridBagLayout configPanelLayout = new GridBagLayout();
-					configPanelLayout.rowWeights = new double[] { 0.0, 0.0,
-							0.0, 0.0, 0.0, 0.0, 0.1 };
-					configPanelLayout.rowHeights = new int[] { 10, 98, 20, 20,
-							50, 35, 10 };
-
-					assert configPanelLayout.rowWeights.length == configPanelLayout.rowHeights.length;
-
-					configPanelLayout.columnWeights = new double[] { 0.0, 0.0,
-							0.0, 0.1 };
-					configPanelLayout.columnWidths = new int[] { 10, 90, 130,
-							10 };
-
-					assert configPanelLayout.columnWeights.length == configPanelLayout.columnWidths.length;
+					BoxLayout configPanelLayout = new BoxLayout(configPanel,
+							BoxLayout.Y_AXIS);
 
 					mainPanel.add(configPanel, BorderLayout.WEST);
 					configPanel.setLayout(configPanelLayout);
@@ -88,11 +75,12 @@ public class DrawingFormX extends javax.swing.JFrame {
 					{
 
 						functionScroll = new JScrollPane();
-						configPanel.add(functionScroll, new GridBagConstraints(
-								1, 1, 2, 1, 0.0, 0.0,
-								GridBagConstraints.CENTER,
-								GridBagConstraints.BOTH,
-								new Insets(0, 0, 0, 0), 0, 0));
+						functionScroll.setPreferredSize(new Dimension(100, 99));
+						functionScroll.setMaximumSize(new Dimension(220, 220));
+						
+						configPanel.add(Box.createRigidArea(new Dimension(0,10)));
+						configPanel.add(functionScroll);						
+						
 						{
 
 							TableModel functionTableModel = new AbstractTableModel() {
@@ -161,6 +149,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 							};
 
 							functionTable = new JTable();
+							functionTable.setAlignmentX(CENTER_ALIGNMENT);
 							functionScroll.setViewportView(functionTable);
 							functionTable.setModel(functionTableModel);
 							functionTable.getColumnModel().getColumn(0)
@@ -168,30 +157,26 @@ public class DrawingFormX extends javax.swing.JFrame {
 
 						}
 					}
+					
 					{
-						drawButton = new JButton();
-						configPanel.add(drawButton, new GridBagConstraints(1,
-								2, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER,
-								GridBagConstraints.HORIZONTAL, new Insets(0, 0,
-										0, 0), 0, 0));
-						drawButton.setText("Draw");
+						JPanel precisionPanel = new JPanel();
 
-					}
-					{
-						configPanel.add(new JLabel("precision"),
-								new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0,
-										GridBagConstraints.LINE_END,
-										GridBagConstraints.NONE, new Insets(0,
-												0, 0, 0), 0, 0));
+						precisionPanel.add(new JLabel("precision:"));
 						precisionSlider = new JSlider();
-						configPanel.add(precisionSlider,
-								new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0,
-										GridBagConstraints.CENTER,
-										GridBagConstraints.HORIZONTAL,
-										new Insets(0, 0, 0, 0), 0, 0));
 						precisionSlider.setMinimum(15);
 						precisionSlider.setMaximum(30);
 						precisionSlider.setValue(20);
+						precisionSlider.setPreferredSize(new Dimension(80, 20));
+						
+						precisionPanel.add(precisionSlider);
+						drawButton = new JButton();						
+						drawButton.setText("Draw");						
+
+						precisionPanel.add(drawButton);
+						
+
+
+						configPanel.add(precisionPanel);
 					}
 
 				}

@@ -4,7 +4,7 @@ import java.util.List;
 
 import model.Matrix;
 
-public interface MayDrawFunctions {
+public interface DrawsFunctions {
 
 	/**
 	 * 

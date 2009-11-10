@@ -18,7 +18,7 @@ import org.antlr.runtime.RecognitionException;
 import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
-public class FDrawComponent extends JLabel implements MayDrawFunctions {
+public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private boolean drawingStarted = false;
 
