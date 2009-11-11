@@ -3,19 +3,12 @@ package ui;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
 
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
-import model.FunctionEvaluator;
 import model.Matrix;
-
-import org.antlr.runtime.RecognitionException;
-
-import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
 public class FDrawComponent extends JLabel implements DrawsFunctions {
@@ -29,7 +22,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	 * @param rotation
 	 * @param precision
 	 */
-	public void startDrawing(List<String> functions, double distance,
+	public void startDrawing(CalculatingWorker cworker, double distance,
 			double[] rotation, int precision) {
 
 		// in case this is a actually a "redraw"
@@ -37,17 +30,13 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 		this.rotation = rotation;
 		this.distance = distance;
+		this.cworker = cworker;
 
 		calculate3D();
 		splitIntervals(precision);
 
-		LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
-		varMap.put("x", this.xvalues);
-		varMap.put("y", this.yvalues);
-
-		cworker = new CalculatingWorker(createEvaluators(functions), varMap, 0,
-				0.1, this);
-		cworker.execute();
+		cworker.modifyVarMap("x", this.xvalues);
+		cworker.modifyVarMap("y", this.yvalues);
 
 		this.drawingStarted = true;
 
@@ -75,7 +64,8 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		if (cworker != null) {
 			splitIntervals(precision);
 
-			cworker.modifyIntervals(xvalues, yvalues);
+			cworker.modifyVarMap("x", xvalues);
+			cworker.modifyVarMap("y", yvalues);
 		}
 	}
 
@@ -108,9 +98,18 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 			distance += distance / REDCOEF;
 			calculate3D();
 			splitIntervals(xvalues.length);
-			cworker.modifyIntervals(xvalues, yvalues);
+			cworker.modifyVarMap("x", xvalues);
+			cworker.modifyVarMap("y", yvalues);
 		}
 
+	}
+	
+	public void setDistance(double distance){
+		this.distance = distance;
+		calculate3D();
+		splitIntervals(xvalues.length);
+		cworker.modifyVarMap("x", xvalues);
+		cworker.modifyVarMap("y", yvalues);
 	}
 
 	/**
@@ -123,7 +122,8 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 			distance -= distance / REDCOEF;
 			calculate3D();
 			splitIntervals(xvalues.length);
-			cworker.modifyIntervals(xvalues, yvalues);
+			cworker.modifyVarMap("x", xvalues);
+			cworker.modifyVarMap("y", yvalues);
 		}
 	}
 
@@ -228,11 +228,11 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		int[][] coordsy = new int[xvalues.length][yvalues.length];
 
 		for (Matrix<Double> matrix : matrixesToDraw) {
-
-			// matrix.getMatrixSize()[0] - x axis values on the result matrix
-			// skip if precision was changed and matrixes received from the
-			// calculating worker are no
-			// longer consistent
+			/*
+			 * matrix.getMatrixSize()[0] - x axis values on the result matrix
+			 * skip if precision was changed and matrixes received from the
+			 * calculating worker are no longer consistent
+			 */
 			if (matrix.getMatrixSize()[0] != xvalues.length)
 				break;
 
@@ -317,29 +317,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	}
 
-	private List<FunctionEvaluator> createEvaluators(List<String> functions) {
-
-		List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
-
-		for (String function : functions) {
-			try {
-				evaluators.add(new FunctionEvaluator(function));
-			} catch (UncheckedParserException e) {
-				JOptionPane.showMessageDialog(this, "Incorrect function: "
-						+ function + "\n" + e.getMessage(), "Error",
-						JOptionPane.ERROR_MESSAGE);
-
-			} catch (RecognitionException e) {
-				JOptionPane.showMessageDialog(this, "Incorrect function: "
-						+ function + "\n" + e.getMessage());
-			}
-		}
-		return evaluators;
-	}
-
 	private static final double REDCOEF = 50;
-
-	// private int xvalues.length = 1000;
 
 	private double xvalues[];
 	private double yvalues[];

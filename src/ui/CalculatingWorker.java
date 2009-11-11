@@ -3,7 +3,6 @@ package ui;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JOptionPane;
@@ -12,38 +11,33 @@ import javax.swing.SwingWorker;
 import model.FunctionEvaluator;
 import model.Matrix;
 
+import org.antlr.runtime.RecognitionException;
+
+import parser.UncheckedParserException;
+
 class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 
 	private final List<FunctionEvaluator> evaluators;
-	private final LinkedHashMap<String, double[]> varMap;
+	private final LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
 	private volatile boolean calculate = true;
+	private volatile boolean pauzed;
 
 	private double timeStart;
 	private double timeIncrement;
 
 	private DrawsFunctions drawer;
 
-	public CalculatingWorker(List<FunctionEvaluator> evaluators,
-			LinkedHashMap<String, double[]> varMap, double timeStart,
-			double timeIncrement, DrawsFunctions drawer) {
-		this.evaluators = evaluators;
-		// copy the received map, this makes this class completely
-		// thread-safe
-		this.varMap = deepCopyLinkedHashMap(varMap);
+	public CalculatingWorker(List<String> functions, double timeStart,
+			double timeIncrement, DrawsFunctions drawer)
+			throws UncheckedParserException, RecognitionException {
+
+		this.evaluators = createEvaluators(functions);
+
 		this.timeStart = timeStart;
 		this.timeIncrement = timeIncrement;
 
 		this.drawer = drawer;
-	}
 
-	private LinkedHashMap<String, double[]> deepCopyLinkedHashMap(
-			LinkedHashMap<String, double[]> mapToCopy) {
-		LinkedHashMap<String, double[]> newMap = new LinkedHashMap<String, double[]>();
-
-		for (Map.Entry<String, double[]> entry : mapToCopy.entrySet()) {
-			newMap.put(entry.getKey(), entry.getValue().clone());
-		}
-		return newMap;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -52,21 +46,22 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 		double time = timeStart;
 
 		while (calculate) {
-
-			synchronized (this) {
-				varMap.put("t", new double[] { time });
-			}
-
-			List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
-			for (FunctionEvaluator feval : evaluators) {
-
+			if (!pauzed) {
 				synchronized (this) {
-					results.add(feval.calculate(varMap));
+					varMap.put("t", new double[] { time });
 				}
 
+				List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
+				for (FunctionEvaluator feval : evaluators) {
+
+					synchronized (this) {
+						results.add(feval.calculate(varMap));
+					}
+
+				}
+				publish(results);
+				time += timeIncrement;
 			}
-			publish(results);
-			time += timeIncrement;
 		}
 
 		return null;
@@ -84,7 +79,8 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 		try {
 			get();
 		} catch (InterruptedException e) {
-			e.printStackTrace(); // can't happen
+			// interrupting edt? shouldn't happen
+			Thread.currentThread().interrupt();
 		} catch (ExecutionException e) {
 			JOptionPane.showMessageDialog(null, "Incorrect function\n"
 					+ e.getMessage()
@@ -95,12 +91,31 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 	}
 
 	public void stop() {
-		calculate = false;
+		this.calculate = false;
 	}
 
-	public synchronized void modifyIntervals(double xvalues[], double[] yvalues) {
-		varMap.put("x", xvalues.clone());
-		varMap.put("y", yvalues.clone());
+	public void pauze() {
+		this.pauzed = true;
+	}
+
+	public void resume() {
+		this.pauzed = false;
+	}
+
+	public synchronized void modifyVarMap(String variable, double[] values) {
+		varMap.put(variable, values);
+	}
+
+	private List<FunctionEvaluator> createEvaluators(List<String> functions)
+			throws UncheckedParserException, RecognitionException {
+
+		List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
+
+		for (String function : functions) {
+			evaluators.add(new FunctionEvaluator(function));
+		}
+
+		return evaluators;
 	}
 
 }

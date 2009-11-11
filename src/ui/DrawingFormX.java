@@ -16,6 +16,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
@@ -27,6 +28,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
+
+import org.antlr.runtime.RecognitionException;
+
+import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
 public class DrawingFormX extends javax.swing.JFrame {
@@ -77,10 +82,11 @@ public class DrawingFormX extends javax.swing.JFrame {
 						functionScroll = new JScrollPane();
 						functionScroll.setPreferredSize(new Dimension(100, 99));
 						functionScroll.setMaximumSize(new Dimension(220, 220));
-						
-						configPanel.add(Box.createRigidArea(new Dimension(0,10)));
-						configPanel.add(functionScroll);						
-						
+
+						configPanel.add(Box
+								.createRigidArea(new Dimension(0, 10)));
+						configPanel.add(functionScroll);
+
 						{
 
 							TableModel functionTableModel = new AbstractTableModel() {
@@ -157,7 +163,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 
 						}
 					}
-					
+
 					{
 						JPanel precisionPanel = new JPanel();
 
@@ -167,14 +173,12 @@ public class DrawingFormX extends javax.swing.JFrame {
 						precisionSlider.setMaximum(30);
 						precisionSlider.setValue(20);
 						precisionSlider.setPreferredSize(new Dimension(80, 20));
-						
+
 						precisionPanel.add(precisionSlider);
-						drawButton = new JButton();						
-						drawButton.setText("Draw");						
+						drawButton = new JButton();
+						drawButton.setText("Draw");
 
 						precisionPanel.add(drawButton);
-						
-
 
 						configPanel.add(precisionPanel);
 					}
@@ -296,8 +300,19 @@ public class DrawingFormX extends javax.swing.JFrame {
 				functions.add((String) tm.getValueAt(i, 0));
 		}
 
-		functionDrawer.startDrawing(functions, 5, new double[] { Math.PI / 2,
-				-Math.PI / 4, 0 }, getActualPrecsion());
+		try {
+			CalculatingWorker cworker = new CalculatingWorker(functions, 0,
+					0.1, functionDrawer);
+			functionDrawer.startDrawing(cworker, 5, new double[] {
+					Math.PI / 2, -Math.PI / 4, 0 }, getActualPrecsion());
+			cworker.execute();
+		} catch (UncheckedParserException e) {
+			JOptionPane.showMessageDialog(this, "Incorrect function\n"
+					+ e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		} catch (RecognitionException e) {
+			JOptionPane.showMessageDialog(this, "Incorrect function\n"
+					+ e.getMessage());
+		}
 	}
 
 }
