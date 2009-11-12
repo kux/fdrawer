@@ -3,6 +3,7 @@ package model;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -38,6 +39,16 @@ public class FunctionEvaluator {
 
 	public String getFunction() {
 		return function;
+	}
+
+	public List<String> getVariables() {
+		try {
+			this.evaluator.expr();
+		} catch (RecognitionException ignored) {
+		}
+		List<String> variables = this.evaluator.getUndefinedVariables();
+		this.evaluator.reset();
+		return variables;
 	}
 
 	/**

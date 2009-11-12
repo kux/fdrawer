@@ -40,7 +40,7 @@ public class DrawingForm extends javax.swing.JFrame {
 	private JButton drawButton;
 	private JTable functionTable;
 	private JPanel configPanel;
-	private FDrawComponent3d functionDrawer;
+	private FDrawComponent functionDrawer;
 
 	private JLabel timeLabel = new JLabel("t = ");
 	private JButton pauseButton = new JButton("Pause");
@@ -93,9 +93,9 @@ public class DrawingForm extends javax.swing.JFrame {
 
 								private Object[][] data = {
 										{ "sin(x+t)+cos(y+t)",
-												new Boolean(true) },
-										{ "sin(x+t/2)*pow(x,2)",
 												new Boolean(false) },
+										{ "sin(x+t/2)*pow(x,2)",
+												new Boolean(true) },
 										{ "cos(x+t/4)*pow(x,2)",
 												Boolean.valueOf(false) },
 										{ "pow(x,2)", Boolean.valueOf(false) },
@@ -210,7 +210,7 @@ public class DrawingForm extends javax.swing.JFrame {
 					mainPanel.add(drawingPanel, BorderLayout.CENTER);
 					drawingPanel.setLayout(drawingPanelLayout);
 					{
-						functionDrawer = FDrawComponent3d.createInstance();
+						functionDrawer = FDrawComponent.createInstance();
 						functionDrawer
 								.setPreferredSize(new Dimension(500, 400));
 						drawingPanel.add(functionDrawer, BorderLayout.CENTER);
@@ -272,16 +272,20 @@ public class DrawingForm extends javax.swing.JFrame {
 				functions.add((String) tm.getValueAt(i, 0));
 		}
 
-		try {
-			this.cworker.changeDrawnFunctions(functions);
-			functionDrawer.startDrawing(cworker, 5, new double[] { Math.PI / 2,
-					-Math.PI / 4, 0 }, getActualPrecsion());
-		} catch (UncheckedParserException e) {
-			JOptionPane.showMessageDialog(this, "Incorrect function\n"
-					+ e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-		} catch (RecognitionException e) {
-			JOptionPane.showMessageDialog(this, "Incorrect function\n"
-					+ e.getMessage());
+		for (String function : functions) {
+			try {
+
+				this.cworker.addFunction(function);
+				functionDrawer.startDrawing(cworker, 5, new double[] {
+						Math.PI / 2, -Math.PI / 4, 0 }, getActualPrecsion());
+			} catch (UncheckedParserException e) {
+				JOptionPane.showMessageDialog(this, "Incorrect function "
+						+ function + "\n" + e.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
+			} catch (RecognitionException e) {
+				JOptionPane.showMessageDialog(this, "Incorrect function "
+						+ function + "\n" + e.getMessage());
+			}
 		}
 	}
 

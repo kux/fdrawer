@@ -15,6 +15,8 @@ import java.util.HashMap;
 @members {
 /** Map variable name to Integer object holding value */
 	private HashMap<String, Double> memory = new HashMap<String,Double>();
+	private List<String> variables = new ArrayList<String>();
+	private List<String> undefinedVariables = new ArrayList<String>();
 	
 	public HashMap<String, Double> getMemory(){
 		return memory;
@@ -28,6 +30,14 @@ import java.util.HashMap;
     public void emitErrorMessage(String msg) {
 		System.err.println(msg);
 		throw new UncheckedParserException(msg);
+	}
+	
+	public List<String> getVariables(){
+		return variables;
+	}
+	
+	public List<String> getUndefinedVariables(){
+		return undefinedVariables;
 	}
 
 }
@@ -55,9 +65,14 @@ expr returns [double value]
     |   ^('pow' a=expr b=expr) {$value = Math.pow(a,b);}
     |   ID 
         {
+        	variables.add($ID.text);
         	Double d = (Double)memory.get($ID.text);
-        	if ( d!=null ) $value = d.doubleValue();
-        	else throw new UndefinedVariableException("undefined variable "+$ID.text); 
+        	if ( d!=null ){
+        		 $value = d.doubleValue();
+        	}else{
+        		undefinedVariables.add($ID.text);
+        		// throw new UndefinedVariableException("undefined variable "+$ID.text);
+        	} 
         }
     |   FLOAT                  {$value = Double.parseDouble($FLOAT.text);}
     ;

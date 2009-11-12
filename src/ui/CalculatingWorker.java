@@ -7,14 +7,13 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import model.FunctionEvaluator;
 import model.Matrix;
 
 import org.antlr.runtime.RecognitionException;
-
-import parser.UncheckedParserException;
 
 class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 
@@ -36,6 +35,19 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 		varMap.put("x", new double[] {});
 		varMap.put("y", new double[] {});
 		varMap.put("t", new double[] {});
+	}
+
+	/**
+	 * 
+	 * @param drawer
+	 * @throws IllegalStateException
+	 *             if not called from edt
+	 */
+	public void setDrawer(DrawsFunctions drawer) {
+		if (!SwingUtilities.isEventDispatchThread()) {
+			throw new IllegalStateException();
+		}
+		this.drawer = drawer;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -67,7 +79,8 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 
 	@Override
 	protected void process(List<List<Matrix<Double>>> matrixes) {
-		drawer.drawMatrixes(matrixes.get(matrixes.size() - 1));
+		if (drawer != null)
+			drawer.drawMatrixes(matrixes.get(matrixes.size() - 1));
 		if (matrixes.size() > 5)
 			matrixes.clear();
 		form.setTime(time);
@@ -113,21 +126,19 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 		this.timeIncrement = timeIncrement;
 	}
 
-	public synchronized void changeDrawnFunctions(List<String> functions)
-			throws UncheckedParserException, RecognitionException {
-		this.evaluators = createEvaluators(functions);
-	}
-
-	private List<FunctionEvaluator> createEvaluators(List<String> functions)
-			throws UncheckedParserException, RecognitionException {
-
-		List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
-
-		for (String function : functions) {
-			evaluators.add(new FunctionEvaluator(function));
-		}
-
-		return evaluators;
+	/**
+	 * 
+	 * @param function
+	 *            function to add to the ones being evaluated
+	 * @return list of variables the function has
+	 * @throws RecognitionException
+	 */
+	public synchronized List<String> addFunction(String function)
+			throws RecognitionException {
+		FunctionEvaluator evaluator = new FunctionEvaluator(function);
+		List<String> variables = evaluator.getVariables();
+		this.evaluators.add(evaluator);
+		return variables;
 	}
 
 }
