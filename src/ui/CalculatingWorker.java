@@ -1,6 +1,7 @@
 package ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -17,50 +18,47 @@ import parser.UncheckedParserException;
 
 class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 
-	private final List<FunctionEvaluator> evaluators;
 	private final LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
+
+	private List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
 	private volatile boolean calculate = true;
 	private volatile boolean pauzed;
 
-	private double timeStart;
-	private double timeIncrement;
+	private double time = 0;
+	private double timeIncrement = 0.1;
 
 	private DrawsFunctions drawer;
+	private DrawingForm form;
 
-	public CalculatingWorker(List<String> functions, double timeStart,
-			double timeIncrement, DrawsFunctions drawer)
-			throws UncheckedParserException, RecognitionException {
-
-		this.evaluators = createEvaluators(functions);
-
-		this.timeStart = timeStart;
-		this.timeIncrement = timeIncrement;
-
+	public CalculatingWorker(DrawsFunctions drawer, DrawingForm form) {
 		this.drawer = drawer;
-
+		this.form = form;
+		varMap.put("x", new double[] {});
+		varMap.put("y", new double[] {});
+		varMap.put("t", new double[] {});
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected Void doInBackground() throws Exception {
-		double time = timeStart;
 
 		while (calculate) {
 			if (!pauzed) {
 				synchronized (this) {
 					varMap.put("t", new double[] { time });
-				}
 
-				List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
-				for (FunctionEvaluator feval : evaluators) {
+					List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
+					Date start = new Date();
+					for (FunctionEvaluator feval : evaluators) {
 
-					synchronized (this) {
 						results.add(feval.calculate(varMap));
-					}
 
+					}
+					Date end = new Date();
+					if (end.getTime() - start.getTime() > 1)
+						publish(results);
+					time += timeIncrement;
 				}
-				publish(results);
-				time += timeIncrement;
 			}
 		}
 
@@ -72,6 +70,7 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 		drawer.drawMatrixes(matrixes.get(matrixes.size() - 1));
 		if (matrixes.size() > 5)
 			matrixes.clear();
+		form.setTime(time);
 	}
 
 	@Override
@@ -82,7 +81,7 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 			// interrupting edt? shouldn't happen
 			Thread.currentThread().interrupt();
 		} catch (ExecutionException e) {
-			JOptionPane.showMessageDialog(null, "Incorrect function\n"
+			JOptionPane.showMessageDialog(this.form, "Incorrect function\n"
 					+ e.getMessage()
 					+ "\nOnly x, y, t variables are supported !!", "Error",
 					JOptionPane.ERROR_MESSAGE);
@@ -94,7 +93,7 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 		this.calculate = false;
 	}
 
-	public void pauze() {
+	public void pause() {
 		this.pauzed = true;
 	}
 
@@ -104,6 +103,19 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 
 	public synchronized void modifyVarMap(String variable, double[] values) {
 		varMap.put(variable, values);
+	}
+
+	public synchronized void setTime(double time) {
+		this.time = time;
+	}
+
+	public synchronized void setTimeIncrement(double timeIncrement) {
+		this.timeIncrement = timeIncrement;
+	}
+
+	public synchronized void changeDrawnFunctions(List<String> functions)
+			throws UncheckedParserException, RecognitionException {
+		this.evaluators = createEvaluators(functions);
 	}
 
 	private List<FunctionEvaluator> createEvaluators(List<String> functions)

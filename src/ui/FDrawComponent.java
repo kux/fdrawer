@@ -13,8 +13,6 @@ import model.Matrix;
 @SuppressWarnings("serial")
 public class FDrawComponent extends JLabel implements DrawsFunctions {
 
-	private boolean drawingStarted = false;
-
 	/**
 	 * 
 	 * @param functions
@@ -25,9 +23,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	public void startDrawing(CalculatingWorker cworker, double distance,
 			double[] rotation, int precision) {
 
-		// in case this is a actually a "redraw"
-		stopDrawing();
-
 		this.rotation = rotation;
 		this.distance = distance;
 		this.cworker = cworker;
@@ -37,8 +32,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 		cworker.modifyVarMap("x", this.xvalues);
 		cworker.modifyVarMap("y", this.yvalues);
-
-		this.drawingStarted = true;
 
 	}
 
@@ -69,16 +62,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		}
 	}
 
-	/**
-	 * if working, stop the calculating worker
-	 */
-	public void stopDrawing() {
-		if (cworker != null)
-			cworker.stop();
-		this.drawingStarted = false;
-
-	}
-
 	public void modifAngles(double x, double y) {
 		if (cworker != null) {
 			rotation[0] += x;
@@ -89,10 +72,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	}
 
-	/**
-	 * @throws IllegalStateException
-	 *             if no drawing is in progress
-	 */
 	public void zoomOut() {
 		if (cworker != null) {
 			distance += distance / REDCOEF;
@@ -103,8 +82,8 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		}
 
 	}
-	
-	public void setDistance(double distance){
+
+	public void setDistance(double distance) {
 		this.distance = distance;
 		calculate3D();
 		splitIntervals(xvalues.length);
@@ -112,10 +91,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		cworker.modifyVarMap("y", yvalues);
 	}
 
-	/**
-	 * @throws IllegalStateException
-	 *             if no drawing is in progress
-	 */
 	public void zoomIn() {
 
 		if (cworker != null) {
@@ -209,10 +184,8 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	private void draw3dGraphs(Graphics g) {
 
 		// if drawing not started yet, do nothing
-		if (!drawingStarted)
+		if (cworker == null)
 			return;
-
-		// cworker.stop();
 
 		double pixelRangeX = (xvalues[xvalues.length - 1] - xvalues[0])
 				/ getWidth();

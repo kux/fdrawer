@@ -9,6 +9,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,58 +35,60 @@ import org.antlr.runtime.RecognitionException;
 import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
-public class DrawingFormX extends javax.swing.JFrame {
+public class DrawingForm extends javax.swing.JFrame {
+
+	private CalculatingWorker cworker;
+
 	private JPanel mainPanel;
 	private JPanel drawingPanel;
-	private JScrollPane functionScroll;
 	private JSlider precisionSlider;
 	private JButton drawButton;
 	private JTable functionTable;
 	private JPanel configPanel;
 	private FDrawComponent functionDrawer;
 
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				DrawingFormX inst = new DrawingFormX();
-				inst.setLocationRelativeTo(null);
-				inst.setVisible(true);
-			}
-		});
-	}
+	private JLabel timeLabel = new JLabel("t = ");
+	private JButton pauseButton = new JButton("Pause");
 
-	public DrawingFormX() {
+	private NumberFormat nformatter = NumberFormat.getInstance();
+
+	public DrawingForm() {
 		super();
 		initGUI();
-		associateListners();
+		this.cworker = new CalculatingWorker(functionDrawer, this);
+		nformatter.setMaximumFractionDigits(2);
+	}
+
+	public void setTime(double time) {
+		this.timeLabel.setText("t = " + nformatter.format(time));
 	}
 
 	private void initGUI() {
 		try {
 			setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			{
-				mainPanel = new JPanel();
+				this.mainPanel = new JPanel();
 				BorderLayout mainPanelLayout = new BorderLayout();
-				getContentPane().add(mainPanel, BorderLayout.CENTER);
+				this.getContentPane().add(mainPanel, BorderLayout.CENTER);
 				mainPanel.setLayout(mainPanelLayout);
 				{
-					configPanel = new JPanel();
+					this.configPanel = new JPanel();
 					BoxLayout configPanelLayout = new BoxLayout(configPanel,
 							BoxLayout.Y_AXIS);
 
-					mainPanel.add(configPanel, BorderLayout.WEST);
-					configPanel.setLayout(configPanelLayout);
-					configPanel.setPreferredSize(new java.awt.Dimension(240,
-							350));
+					this.mainPanel.add(configPanel, BorderLayout.WEST);
+					this.configPanel.setLayout(configPanelLayout);
+					this.configPanel.setPreferredSize(new java.awt.Dimension(
+							270, 350));
 					{
 
-						functionScroll = new JScrollPane();
-						functionScroll.setPreferredSize(new Dimension(100, 99));
-						functionScroll.setMaximumSize(new Dimension(220, 220));
+						JScrollPane functionScroll = new JScrollPane();
+						functionScroll.setPreferredSize(new Dimension(250, 99));
+						functionScroll.setMaximumSize(new Dimension(250, 99));
 
-						configPanel.add(Box
-								.createRigidArea(new Dimension(0, 10)));
-						configPanel.add(functionScroll);
+						this.configPanel.add(Box.createRigidArea(new Dimension(
+								0, 10)));
+						this.configPanel.add(functionScroll);
 
 						{
 
@@ -154,11 +157,11 @@ public class DrawingFormX extends javax.swing.JFrame {
 
 							};
 
-							functionTable = new JTable();
-							functionTable.setAlignmentX(CENTER_ALIGNMENT);
+							this.functionTable = new JTable();
+							this.functionTable.setAlignmentX(CENTER_ALIGNMENT);
 							functionScroll.setViewportView(functionTable);
-							functionTable.setModel(functionTableModel);
-							functionTable.getColumnModel().getColumn(0)
+							this.functionTable.setModel(functionTableModel);
+							this.functionTable.getColumnModel().getColumn(0)
 									.setPreferredWidth(220);
 
 						}
@@ -166,21 +169,43 @@ public class DrawingFormX extends javax.swing.JFrame {
 
 					{
 						JPanel precisionPanel = new JPanel();
+						precisionPanel.setMaximumSize(new Dimension(250, 30));
 
 						precisionPanel.add(new JLabel("precision:"));
-						precisionSlider = new JSlider();
-						precisionSlider.setMinimum(15);
-						precisionSlider.setMaximum(30);
-						precisionSlider.setValue(20);
-						precisionSlider.setPreferredSize(new Dimension(80, 20));
+						this.precisionSlider = new JSlider();
+						this.precisionSlider.setMinimum(15);
+						this.precisionSlider.setMaximum(30);
+						this.precisionSlider.setValue(20);
+						this.precisionSlider.setPreferredSize(new Dimension(80,
+								20));
 
-						precisionPanel.add(precisionSlider);
-						drawButton = new JButton();
-						drawButton.setText("Draw");
+						precisionPanel.add(this.precisionSlider);
+						this.drawButton = new JButton();
+						this.drawButton.setPreferredSize(new Dimension(90, 20));
+						this.drawButton.setText("Draw");
 
 						precisionPanel.add(drawButton);
 
-						configPanel.add(precisionPanel);
+						this.configPanel.add(precisionPanel);
+					}
+
+					{
+						JPanel timePanel = new JPanel();
+						timePanel.setMaximumSize(new Dimension(240, 30));
+						timePanel.setLayout(new BoxLayout(timePanel,
+								BoxLayout.X_AXIS));
+
+						this.timeLabel.setMinimumSize(new Dimension(50, 20));
+						timePanel.add(this.timeLabel);
+						timePanel.add(Box.createHorizontalGlue());
+
+						timePanel.add(this.pauseButton);
+						this.pauseButton
+								.setPreferredSize(new Dimension(90, 20));
+						this.pauseButton.setMaximumSize(new Dimension(90, 20));
+
+						this.configPanel.add(timePanel);
+
 					}
 
 				}
@@ -216,9 +241,9 @@ public class DrawingFormX extends javax.swing.JFrame {
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				int rotDir = e.getWheelRotation();
 				if (rotDir == 1)
-					DrawingFormX.this.functionDrawer.zoomIn();
+					DrawingForm.this.functionDrawer.zoomIn();
 				else
-					DrawingFormX.this.functionDrawer.zoomOut();
+					DrawingForm.this.functionDrawer.zoomOut();
 
 			}
 
@@ -229,7 +254,7 @@ public class DrawingFormX extends javax.swing.JFrame {
 				x = e.getX();
 				y = e.getY();
 				if (xant != -1 && yant != -1) {
-					DrawingFormX.this.functionDrawer.modifAngles(
+					DrawingForm.this.functionDrawer.modifAngles(
 							(double) (y - yant) / 100,
 							(double) (x - xant) / 100);
 				}
@@ -268,10 +293,10 @@ public class DrawingFormX extends javax.swing.JFrame {
 
 		DrawerMouseListener mouseListener = new DrawerMouseListener();
 
-		functionDrawer.addMouseWheelListener(mouseListener);
-		functionDrawer.addMouseMotionListener(mouseListener);
+		this.functionDrawer.addMouseWheelListener(mouseListener);
+		this.functionDrawer.addMouseMotionListener(mouseListener);
 
-		drawButton.addActionListener(new ActionListener() {
+		this.drawButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				requestDrawing();
@@ -279,17 +304,33 @@ public class DrawingFormX extends javax.swing.JFrame {
 			}
 		});
 
-		precisionSlider.addChangeListener(new ChangeListener() {
+		this.precisionSlider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				functionDrawer.modifyPrecsion(getActualPrecsion());
 
 			}
 		});
+
+		this.pauseButton.addActionListener(new ActionListener() {
+			private boolean pauzed = false;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pauzed = !pauzed;
+				if (pauzed) {
+					DrawingForm.this.cworker.pause();
+					DrawingForm.this.pauseButton.setText("Resume");
+				} else {
+					DrawingForm.this.cworker.resume();
+					DrawingForm.this.pauseButton.setText("Pause");
+				}
+			}
+		});
 	}
 
 	private int getActualPrecsion() {
-		return (int) Math.pow(1.2, precisionSlider.getValue());
+		return (int) Math.pow(1.2, this.precisionSlider.getValue());
 	}
 
 	private void requestDrawing() {
@@ -301,11 +342,9 @@ public class DrawingFormX extends javax.swing.JFrame {
 		}
 
 		try {
-			CalculatingWorker cworker = new CalculatingWorker(functions, 0,
-					0.1, functionDrawer);
-			functionDrawer.startDrawing(cworker, 5, new double[] {
-					Math.PI / 2, -Math.PI / 4, 0 }, getActualPrecsion());
-			cworker.execute();
+			this.cworker.changeDrawnFunctions(functions);
+			functionDrawer.startDrawing(cworker, 5, new double[] { Math.PI / 2,
+					-Math.PI / 4, 0 }, getActualPrecsion());
 		} catch (UncheckedParserException e) {
 			JOptionPane.showMessageDialog(this, "Incorrect function\n"
 					+ e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -313,6 +352,25 @@ public class DrawingFormX extends javax.swing.JFrame {
 			JOptionPane.showMessageDialog(this, "Incorrect function\n"
 					+ e.getMessage());
 		}
+	}
+
+	private void start() {
+		this.cworker.execute();
+	}
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+
+				DrawingForm inst = new DrawingForm();
+				inst.setLocationRelativeTo(null);
+				inst.setVisible(true);
+
+				inst.associateListners();
+				inst.requestDrawing();
+				inst.start();
+			}
+		});
 	}
 
 }
