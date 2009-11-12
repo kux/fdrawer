@@ -2,6 +2,11 @@ package ui;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,7 +16,20 @@ import javax.swing.JLabel;
 import model.Matrix;
 
 @SuppressWarnings("serial")
-public class FDrawComponent extends JLabel implements DrawsFunctions {
+public class FDrawComponent3d extends JLabel implements DrawsFunctions,
+		MouseWheelListener, MouseMotionListener, MouseListener {
+
+	private FDrawComponent3d() {
+
+	}
+
+	public static FDrawComponent3d createInstance() {
+		FDrawComponent3d drawComponent = new FDrawComponent3d();
+		drawComponent.addMouseListener(drawComponent);
+		drawComponent.addMouseMotionListener(drawComponent);
+		drawComponent.addMouseWheelListener(drawComponent);
+		return drawComponent;
+	}
 
 	/**
 	 * 
@@ -302,5 +320,59 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
 	private CalculatingWorker cworker = null;
+
+	private int xPointer = -1;
+	private int yPointer = -1;
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		int rotDir = e.getWheelRotation();
+		if (rotDir == 1)
+			this.zoomIn();
+		else
+			this.zoomOut();
+
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		int xant = xPointer;
+		int yant = yPointer;
+		xPointer = e.getX();
+		yPointer = e.getY();
+		if (xant != -1 && yant != -1) {
+			this.modifAngles((double) (yPointer - yant) / 100,
+					(double) (xPointer - xant) / 100);
+		}
+
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent arg0) {
+		xPointer = -1;
+		yPointer = -1;
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		this.xPointer = -1;
+		this.yPointer = -1;
+	}
 
 }

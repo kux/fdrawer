@@ -4,11 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +40,7 @@ public class DrawingForm extends javax.swing.JFrame {
 	private JButton drawButton;
 	private JTable functionTable;
 	private JPanel configPanel;
-	private FDrawComponent functionDrawer;
+	private FDrawComponent3d functionDrawer;
 
 	private JLabel timeLabel = new JLabel("t = ");
 	private JButton pauseButton = new JButton("Pause");
@@ -215,7 +210,7 @@ public class DrawingForm extends javax.swing.JFrame {
 					mainPanel.add(drawingPanel, BorderLayout.CENTER);
 					drawingPanel.setLayout(drawingPanelLayout);
 					{
-						functionDrawer = new FDrawComponent();
+						functionDrawer = FDrawComponent3d.createInstance();
 						functionDrawer
 								.setPreferredSize(new Dimension(500, 400));
 						drawingPanel.add(functionDrawer, BorderLayout.CENTER);
@@ -231,70 +226,6 @@ public class DrawingForm extends javax.swing.JFrame {
 	}
 
 	private void associateListners() {
-
-		class DrawerMouseListener implements MouseWheelListener,
-				MouseMotionListener, MouseListener {
-			int x = -1;
-			int y = -1;
-
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent e) {
-				int rotDir = e.getWheelRotation();
-				if (rotDir == 1)
-					DrawingForm.this.functionDrawer.zoomIn();
-				else
-					DrawingForm.this.functionDrawer.zoomOut();
-
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				int xant = x;
-				int yant = y;
-				x = e.getX();
-				y = e.getY();
-				if (xant != -1 && yant != -1) {
-					DrawingForm.this.functionDrawer.modifAngles(
-							(double) (y - yant) / 100,
-							(double) (x - xant) / 100);
-				}
-
-			}
-
-			@Override
-			public void mouseMoved(MouseEvent arg0) {
-				x = -1;
-				y = -1;
-			}
-
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-			}
-
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent arg0) {
-				this.x = -1;
-				this.y = -1;
-			}
-
-		}
-
-		DrawerMouseListener mouseListener = new DrawerMouseListener();
-
-		this.functionDrawer.addMouseWheelListener(mouseListener);
-		this.functionDrawer.addMouseMotionListener(mouseListener);
 
 		this.drawButton.addActionListener(new ActionListener() {
 			@Override
