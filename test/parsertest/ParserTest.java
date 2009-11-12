@@ -1,12 +1,10 @@
 package parsertest;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
 import junit.framework.Assert;
 
-import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -21,49 +19,27 @@ import parser.UncheckedParserException;
 
 public class ParserTest {
 
-	private Eval initEvaluator(String testFile) {
-		Eval eval = null;
-		try {
-			ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(
-					testFile));
-			ExprLexer lexer = new ExprLexer(input);
-			CommonTokenStream tokens = new CommonTokenStream(lexer);
-			ExprParser parser = new ExprParser(tokens);
-			ExprParser.entry_return r = parser.entry();
-			CommonTree t = (CommonTree) r.getTree();
-			CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
-			eval = new Eval(nodes);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	private Eval initEvaluator(String testFunction) throws RecognitionException {
 
-		return eval;
-
-	}
-
-
-	@Test(expected=UncheckedParserException.class)
-	public void badFunction() throws RecognitionException{
-		ANTLRStringStream input = new ANTLRStringStream(";123");
+		ANTLRStringStream input = new ANTLRStringStream(testFunction);
 		ExprLexer lexer = new ExprLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		ExprParser parser = new ExprParser(tokens);
 		ExprParser.entry_return r = parser.entry();
 		CommonTree t = (CommonTree) r.getTree();
 		CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
-		new Eval(nodes);
+		return new Eval(nodes);
 	}
-	
+
+	@Test(expected = UncheckedParserException.class)
+	public void badFunction() throws RecognitionException {
+		initEvaluator(";123");
+
+	}
+
 	@Test
-	public void powFunction() throws RecognitionException{
-		ANTLRStringStream input = new ANTLRStringStream("pow(x,3)+2");
-		ExprLexer lexer = new ExprLexer(input);
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		ExprParser parser = new ExprParser(tokens);
-		ExprParser.entry_return r = parser.entry();
-		CommonTree t = (CommonTree) r.getTree();
-		CommonTreeNodeStream nodes = new CommonTreeNodeStream(t);
-		Eval walker = new Eval(nodes);
+	public void powFunction() throws RecognitionException {
+		Eval walker = initEvaluator("pow(x,3)+2");
 		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("x", Double.valueOf(2));
 		walker.setMemory(memory);
@@ -72,7 +48,7 @@ public class ParserTest {
 
 	@Test
 	public void basicTest() throws IOException, RecognitionException {
-		Eval walker = initEvaluator("./test/parsertest/correct");
+		Eval walker = initEvaluator("cos x /cos (2*x)");
 		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("x", Double.valueOf(2));
 		walker.setMemory(memory);
@@ -82,7 +58,7 @@ public class ParserTest {
 	@Test
 	public void withFloat() throws IOException, RecognitionException {
 
-		Eval walker = initEvaluator("./test/parsertest/withfloat");
+		Eval walker = initEvaluator("1.3+1.01*2+a*3.3");
 		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("a", Double.valueOf(2));
 		walker.setMemory(memory);
@@ -92,7 +68,7 @@ public class ParserTest {
 
 	@Test
 	public void withUnary() throws IOException, RecognitionException {
-		Eval walker = initEvaluator("./test/parsertest/withunary");
+		Eval walker = initEvaluator("sin(x) + 1");
 		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("x", Double.valueOf(1));
 		walker.setMemory(memory);
@@ -102,7 +78,7 @@ public class ParserTest {
 
 	@Test
 	public void unaryNoPar() throws IOException, RecognitionException {
-		Eval walker = initEvaluator("./test/parsertest/unarynopar");
+		Eval walker = initEvaluator("3+sin 3*b");
 		HashMap<String, Double> memory = new HashMap<String, Double>();
 		memory.put("b", Double.valueOf(3));
 		walker.setMemory(memory);
@@ -112,15 +88,42 @@ public class ParserTest {
 
 	@Test
 	public void unaryMinus() throws IOException, RecognitionException {
-		Eval walker = initEvaluator("./test/parsertest/unaryminus1");
+		Eval walker = initEvaluator("5+-2");
 		Assert.assertEquals(3, walker.entry(), 0.01);
 
 	}
 
 	@Test
 	public void unaryMinusNoPar() throws IOException, RecognitionException {
-		Eval walker = initEvaluator("./test/parsertest/unaryminus2");
+		Eval walker = initEvaluator("5+(-2)");
 		Assert.assertEquals(3, walker.entry(), 0.01);
+	}
 
+	@Test
+	public void getVariables() throws IOException, RecognitionException {
+		Eval walker = initEvaluator("x+(-y)");
+		HashMap<String, Double> memory = new HashMap<String, Double>();
+		memory.put("x", Double.valueOf(3));
+		memory.put("y", Double.valueOf(1));
+		walker.entry();
+		Assert.assertEquals(2, walker.getVariables().size());
+	}
+
+	@Test
+	public void getVariablesUndefinedNanResult() throws IOException,
+			RecognitionException {
+		Eval walker = initEvaluator("x/y)");
+		double result = walker.entry();
+		System.out.println(result);
+		Assert.assertEquals(2, walker.getUndefinedVariables().size());
+	}
+
+	@Test
+	public void getVariablesUndefined() throws IOException,
+			RecognitionException {
+		Eval walker = initEvaluator("x+y)");
+		double result = walker.entry();
+		System.out.println(result);
+		Assert.assertEquals(2, walker.getUndefinedVariables().size());
 	}
 }
