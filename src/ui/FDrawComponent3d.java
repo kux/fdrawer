@@ -16,8 +16,7 @@ import javax.swing.JLabel;
 import model.Matrix;
 
 @SuppressWarnings("serial")
-public class FDrawComponent3d extends JLabel implements DrawsFunctions,
-		MouseWheelListener, MouseMotionListener, MouseListener {
+public class FDrawComponent3d extends JLabel implements DrawsFunctions {
 
 	private FDrawComponent3d() {
 
@@ -25,9 +24,10 @@ public class FDrawComponent3d extends JLabel implements DrawsFunctions,
 
 	public static FDrawComponent3d createInstance() {
 		FDrawComponent3d drawComponent = new FDrawComponent3d();
-		drawComponent.addMouseListener(drawComponent);
-		drawComponent.addMouseMotionListener(drawComponent);
-		drawComponent.addMouseWheelListener(drawComponent);
+		DrawerMouseListener dml = drawComponent.new DrawerMouseListener();
+		drawComponent.addMouseListener(dml);
+		drawComponent.addMouseMotionListener(dml);
+		drawComponent.addMouseWheelListener(dml);
 		return drawComponent;
 	}
 
@@ -53,16 +53,9 @@ public class FDrawComponent3d extends JLabel implements DrawsFunctions,
 
 	}
 
-	private void calculate3D() {
-		this.eye = new double[] { 0, 0, distance };
-
-		camera[2] = Math.sqrt(Math.pow(distance, 2)
-				/ (1 + Math.pow(Math.tan(rotation[0]), 2) + Math.pow(Math
-						.tan(rotation[1]), 2)));
-
-		camera[0] = camera[2] * Math.tan(rotation[0]);
-		camera[1] = camera[2] * Math.tan(rotation[1]);
-
+	public void drawMatrixes(List<Matrix<Double>> toDraw) {
+		this.matrixesToDraw = toDraw;
+		repaint();
 	}
 
 	/**
@@ -80,7 +73,26 @@ public class FDrawComponent3d extends JLabel implements DrawsFunctions,
 		}
 	}
 
-	public void modifAngles(double x, double y) {
+	public void setDistance(double distance) {
+		this.distance = distance;
+		calculate3D();
+		splitIntervals(xvalues.length);
+		cworker.modifyVarMap("x", xvalues);
+		cworker.modifyVarMap("y", yvalues);
+	}
+
+	private void calculate3D() {
+		this.eye = new double[] { 0, 0, distance };
+
+		camera[2] = Math.sqrt(Math.pow(distance, 2)
+				/ (1 + Math.pow(Math.tan(rotation[0]), 2) + Math.pow(Math
+						.tan(rotation[1]), 2)));
+
+		camera[0] = camera[2] * Math.tan(rotation[0]);
+		camera[1] = camera[2] * Math.tan(rotation[1]);
+	}
+
+	private void modifAngles(double x, double y) {
 		if (cworker != null) {
 			rotation[0] += x;
 			rotation[1] += y;
@@ -90,7 +102,7 @@ public class FDrawComponent3d extends JLabel implements DrawsFunctions,
 
 	}
 
-	public void zoomOut() {
+	private void zoomOut() {
 		if (cworker != null) {
 			distance += distance / REDCOEF;
 			calculate3D();
@@ -101,15 +113,7 @@ public class FDrawComponent3d extends JLabel implements DrawsFunctions,
 
 	}
 
-	public void setDistance(double distance) {
-		this.distance = distance;
-		calculate3D();
-		splitIntervals(xvalues.length);
-		cworker.modifyVarMap("x", xvalues);
-		cworker.modifyVarMap("y", yvalues);
-	}
-
-	public void zoomIn() {
+	private void zoomIn() {
 
 		if (cworker != null) {
 			distance -= distance / REDCOEF;
@@ -118,23 +122,6 @@ public class FDrawComponent3d extends JLabel implements DrawsFunctions,
 			cworker.modifyVarMap("x", xvalues);
 			cworker.modifyVarMap("y", yvalues);
 		}
-	}
-
-	public void setCamera(double[] camera) {
-		this.camera = camera;
-	}
-
-	public void setRotation(double[] rotation) {
-		this.rotation = rotation;
-	}
-
-	public void setEye(double[] eye) {
-		this.eye = eye;
-	}
-
-	public void drawMatrixes(List<Matrix<Double>> toDraw) {
-		this.matrixesToDraw = toDraw;
-		repaint();
 	}
 
 	private void splitIntervals(int precision) {
@@ -324,55 +311,60 @@ public class FDrawComponent3d extends JLabel implements DrawsFunctions,
 	private int xPointer = -1;
 	private int yPointer = -1;
 
-	@Override
-	public void mouseWheelMoved(MouseWheelEvent e) {
-		int rotDir = e.getWheelRotation();
-		if (rotDir == 1)
-			this.zoomIn();
-		else
-			this.zoomOut();
+	private class DrawerMouseListener implements MouseWheelListener,
+			MouseMotionListener, MouseListener {
 
-	}
+		@Override
+		public void mouseWheelMoved(MouseWheelEvent e) {
+			int rotDir = e.getWheelRotation();
+			if (rotDir == 1)
+				FDrawComponent3d.this.zoomIn();
+			else
+				FDrawComponent3d.this.zoomOut();
 
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		int xant = xPointer;
-		int yant = yPointer;
-		xPointer = e.getX();
-		yPointer = e.getY();
-		if (xant != -1 && yant != -1) {
-			this.modifAngles((double) (yPointer - yant) / 100,
-					(double) (xPointer - xant) / 100);
 		}
 
-	}
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			int xant = xPointer;
+			int yant = yPointer;
+			xPointer = e.getX();
+			yPointer = e.getY();
+			if (xant != -1 && yant != -1) {
+				FDrawComponent3d.this.modifAngles(
+						(double) (yPointer - yant) / 100,
+						(double) (xPointer - xant) / 100);
+			}
 
-	@Override
-	public void mouseMoved(MouseEvent arg0) {
-		xPointer = -1;
-		yPointer = -1;
-	}
+		}
 
-	@Override
-	public void mouseClicked(MouseEvent arg0) {
-	}
+		@Override
+		public void mouseMoved(MouseEvent arg0) {
+			xPointer = -1;
+			yPointer = -1;
+		}
 
-	@Override
-	public void mouseEntered(MouseEvent arg0) {
-	}
+		@Override
+		public void mouseClicked(MouseEvent arg0) {
+		}
 
-	@Override
-	public void mouseExited(MouseEvent arg0) {
-	}
+		@Override
+		public void mouseEntered(MouseEvent arg0) {
+		}
 
-	@Override
-	public void mousePressed(MouseEvent arg0) {
-	}
+		@Override
+		public void mouseExited(MouseEvent arg0) {
+		}
 
-	@Override
-	public void mouseReleased(MouseEvent arg0) {
-		this.xPointer = -1;
-		this.yPointer = -1;
+		@Override
+		public void mousePressed(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent arg0) {
+			FDrawComponent3d.this.xPointer = -1;
+			FDrawComponent3d.this.yPointer = -1;
+		}
 	}
 
 }

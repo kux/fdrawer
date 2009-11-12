@@ -3,7 +3,7 @@
 	<property name="src.dir" location="src" />
 	<property name="lib.dir" location="lib" />
 	<property name="test.src.dir" location="test" />
-	<property name="etc.dir" location="etc" />
+	<property name="parser.dir" location="${src.dir}/grammar" />
 
 	<property name="build.dir" location="build" />
 	<property name="build.class.dir" location="${build.dir}/classes" />
@@ -12,8 +12,8 @@
 	<property name="build.fprod" location="${build.dir}/deploy/fdrawer.jar" />
 
 
-	<property name="grammar.file" value="${etc.dir}/Expr.g" />
-	<property name="eval.file" value="${etc.dir}/Eval.g" />
+	<property name="grammar.file" value="${parser.dir}/Expr.g" />
+	<property name="eval.file" value="${parser.dir}/Eval.g" />
 	<property name="reports.tests" value="testresult" />
 
 
@@ -29,9 +29,9 @@
 			<arg value="${eval.file}" />
 		</java>
 
-		<move file="${etc.dir}/ExprLexer.java" todir="${src.dir}/parser" />
-		<move file="${etc.dir}/ExprParser.java" todir="${src.dir}/parser" />
-		<move file="${etc.dir}/Eval.java" todir="${src.dir}/parser" />
+		<move file="${parser.dir}/ExprLexer.java" todir="${src.dir}/parser" />
+		<move file="${parser.dir}/ExprParser.java" todir="${src.dir}/parser" />
+		<move file="${parser.dir}/Eval.java" todir="${src.dir}/parser" />
 		<move file="${basedir}/Expr.tokens" todir="${src.dir}/parser" />
 		<move file="${basedir}/Eval.tokens" todir="${src.dir}/parser" />
 
