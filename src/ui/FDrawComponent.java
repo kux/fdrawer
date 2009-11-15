@@ -7,11 +7,17 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import model.Matrix;
 
@@ -49,6 +55,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private FDrawComponent(CalculatingWorker cworker) {
 		this.cworker = cworker;
+		nformatter.setMaximumFractionDigits(2);
 	}
 
 	public static FDrawComponent createInstance(CalculatingWorker cworker) {
@@ -61,6 +68,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		drawComponent.addMouseWheelListener(dml);
 
 		drawComponent.setType(Type.DRAW3D);
+		drawComponent.schedueleDrawing();
 		return drawComponent;
 	}
 
@@ -96,8 +104,11 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	}
 
 	public void drawMatrixes(List<Matrix<Double>> toDraw) {
-		this.matrixesToDraw = toDraw;
-		repaint();
+		System.out.println("added to draw");
+		this.drawingQueue.add(toDraw);
+		System.out.println("drawing queue size: " + drawingQueue.size());
+		// this.matrixesToDraw = toDraw;
+		// repaint();
 	}
 
 	/**
@@ -376,10 +387,11 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private void draw2dGraphs(Graphics g) {
 
-		draw2dAxis(g);
-
 		double pixelRange = (xvalues[xvalues.length - 1] - xvalues[0])
 				/ getWidth();
+
+		draw2dAxis(g, pixelRange);
+
 		Random rand = new Random(10);
 
 		for (Matrix<Double> matrix : matrixesToDraw) {
@@ -408,17 +420,23 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		}
 	}
 
-	private void draw2dAxis(Graphics g) {
+	private void draw2dAxis(Graphics g, double pixelRange) {
 		g.setColor(Color.GRAY);
 		double inc = (xvalues[xvalues.length - 1] - xvalues[0]) / getWidth();
 		if (xvalues[0] < 0 && xvalues[xvalues.length - 1] > 0) {
 			int yaxis = (int) ((-xvalues[0]) / inc);
 			g.drawLine(yaxis, 0, yaxis, getHeight());
+			g.drawString(nformatter.format(ybottom), yaxis, getHeight() - 10);
+			g.drawString(nformatter.format(ybottom + getHeight() * pixelRange),
+					yaxis, 10);
 		}
 
 		if (ybottom + inc * getHeight() > 0) {
 			int xaxis = getHeight() + (int) (ybottom / inc);
 			g.drawLine(0, xaxis, getWidth(), xaxis);
+			g.drawString(nformatter.format(xvalues[0]), 0, xaxis);
+			String xright = nformatter.format(xvalues[xvalues.length - 1]);
+			g.drawString(xright, getWidth() - xright.length() * 11, xaxis);
 		}
 	}
 
@@ -431,6 +449,38 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 				&& y1 < getHeight() && y1 > 0 && y2 < getHeight() && y2 > 0);
 
 	}
+
+	private void schedueleDrawing() {
+		drawingSchedueler.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				SwingUtilities.invokeLater(new Runnable() {
+
+					@Override
+					public void run() {
+
+						if (!waiting) {
+							if (FDrawComponent.this.drawingQueue.size() != 0) {
+								FDrawComponent.this.matrixesToDraw = FDrawComponent.this.drawingQueue
+										.remove(0);
+								FDrawComponent.this.repaint();
+							} else {
+								waiting = true;
+							}
+						} else {
+							if (FDrawComponent.this.drawingQueue.size() > 200) {
+								waiting = false;
+							}
+						}
+					}
+				});
+			}
+
+		}, 50, 50, TimeUnit.MILLISECONDS);
+
+	}
+
+	private boolean waiting = true;
 
 	private static final double REDCOEF = 50;
 
@@ -446,10 +496,18 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	private double eye[] = new double[] { 0, 0, 5 };
 
 	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
+
+	private List<List<Matrix<Double>>> drawingQueue = new ArrayList<List<Matrix<Double>>>();
+
 	private CalculatingWorker cworker = null;
 
 	private int xPointer = -1;
 	private int yPointer = -1;
+
+	private NumberFormat nformatter = NumberFormat.getInstance();
+
+	private ScheduledExecutorService drawingSchedueler = Executors
+			.newSingleThreadScheduledExecutor();
 
 	private interface DrawerMouseListener extends MouseWheelListener,
 			MouseMotionListener, MouseListener {

@@ -6,7 +6,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -146,4 +148,37 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 			varMap.remove(key);
 		}
 	}
+
+	private class Calculator implements Runnable {
+		@Override
+		public void run() {
+			while (calculate && !Thread.currentThread().isInterrupted()) {
+				if (!pauzed) {
+					synchronized (this) {
+						varMap.put("t", new double[] { time });
+
+						List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
+
+						for (FunctionEvaluator feval : evaluators) {
+
+							results.add(feval.calculate(varMap));
+
+						}
+
+						try {
+							drawingQueue.put(results);
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						}
+
+						time += timeIncrement;
+					}
+				}
+			}
+		}
+	}
+
+	private BlockingQueue<List<Matrix<Double>>> drawingQueue = new LinkedBlockingQueue<List<Matrix<Double>>>(
+			100);
+
 }
