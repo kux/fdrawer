@@ -10,14 +10,9 @@ import java.awt.event.MouseWheelListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 
 import model.Matrix;
 
@@ -119,6 +114,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 			cworker.modifyVarMap("x", xvalues);
 			cworker.modifyVarMap("y", yvalues);
+			cworker.resetDrawingQueue();
 		}
 	}
 
@@ -126,6 +122,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		if (type == Type.DRAW2D) {
 			calculateXValues(xvalues[0], xvalues[xvalues.length - 1], precision);
 			cworker.modifyVarMap("x", xvalues);
+			cworker.resetDrawingQueue();
 		}
 	}
 
@@ -293,7 +290,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		double pixelRangeY = (yvalues[yvalues.length - 1] - yvalues[0])
 				/ getHeight();
 
-		draw3dAxis(g, pixelRangeX, pixelRangeY);
+		// draw3dAxis(g, pixelRangeX, pixelRangeY);
 
 		Random rand = new Random(10);
 
@@ -354,6 +351,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	}
 
+	@SuppressWarnings("unused")
 	private void draw3dAxis(Graphics g, double pixelRangeX, double pixelRangeY) {
 
 		int[] origin = calculateOnScreen(project(translate(new double[] { 0, 0,
@@ -445,8 +443,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 				&& y1 < getHeight() && y1 > 0 && y2 < getHeight() && y2 > 0);
 
 	}
-
-	private boolean waiting = true;
 
 	private static final double REDCOEF = 50;
 

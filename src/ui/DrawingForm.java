@@ -15,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTable;
@@ -48,6 +49,7 @@ public class DrawingForm extends javax.swing.JFrame {
 	private JLabel timeLabel = new JLabel("t = ");
 	private JButton pauseButton = new JButton("Pause");
 	private JButton resetButton = new JButton("Reset");
+	JProgressBar drawingProgress = new JProgressBar(0, 100);
 
 	private NumberFormat nformatter = NumberFormat.getInstance();
 
@@ -65,6 +67,17 @@ public class DrawingForm extends javax.swing.JFrame {
 
 	public void setTime(double time) {
 		this.timeLabel.setText("t = " + nformatter.format(time));
+	}
+
+	public void setProgress(final int progress) {
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				drawingProgress.setValue(progress);
+
+			}
+		});
 	}
 
 	private void initGUI() {
@@ -170,6 +183,10 @@ public class DrawingForm extends javax.swing.JFrame {
 						functionDrawer.setBorder(new LineBorder(
 								new java.awt.Color(0, 0, 0), 1, false));
 					}
+
+					drawingProgress = new JProgressBar(0, 100);
+					drawingProgress.setValue(0);
+					drawingPanel.add(drawingProgress, BorderLayout.SOUTH);
 				}
 			}
 			pack();
@@ -224,7 +241,7 @@ public class DrawingForm extends javax.swing.JFrame {
 	}
 
 	private void start() {
-		this.cworker.execute();
+		this.cworker.start();
 	}
 
 	private class DrawingTableModel extends AbstractTableModel {
@@ -377,8 +394,8 @@ public class DrawingForm extends javax.swing.JFrame {
 			}
 
 			if (has3d) {
-				functionDrawer.set3dDrawingProperties(5, new double[] {
-						Math.PI / 2, -Math.PI / 4, 0 }, get3dPrecision());
+				functionDrawer.set3dDrawingProperties(5,
+						new double[] { 0, 0, 0 }, get3dPrecision());
 			} else {
 				functionDrawer.set2dDrawingProperties(-5, 5, get2dPrecision());
 			}
