@@ -11,11 +11,11 @@ import java.util.ArrayList;
  */
 public class Matrix<T> {
 
-	private ArrayList<T> vmatrix;
+	final private ArrayList<T> vmatrix;
 
-	private int[] matrixSize;
-	private int dimNo;
-	private int flatten;
+	final private int[] matrixSize;
+	final private int dimNo;
+	final private int flatten;
 
 	/**
 	 * the number of passed parameters defines number of dimensions the matrix
@@ -86,7 +86,8 @@ public class Matrix<T> {
 
 	private int getFlattenIndice(int... indices) {
 		if (indices.length != dimNo)
-			throw new IllegalArgumentException("Number of indices don't match matrix dimmension");
+			throw new IllegalArgumentException(
+					"Number of indices don't match matrix dimmension");
 
 		int flattenIndice = 0;
 		int fcoef = flatten;

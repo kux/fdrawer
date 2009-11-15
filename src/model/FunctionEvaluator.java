@@ -42,6 +42,7 @@ public class FunctionEvaluator {
 
 	public Set<String> getVariables() {
 		try {
+			this.evaluator.reset();
 			this.evaluator.expr();
 		} catch (RecognitionException ignored) {
 		}
@@ -102,6 +103,11 @@ public class FunctionEvaluator {
 
 		}
 		return rezultMatrix;
+	}
+
+	@Override
+	public String toString() {
+		return function;
 	}
 
 	private int[] unflatten(int flatPoz, int flatSize, int[] sideSize) {

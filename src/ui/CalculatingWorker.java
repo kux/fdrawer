@@ -31,10 +31,8 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 	private DrawsFunctions drawer;
 	private DrawingForm form;
 
-	public CalculatingWorker(DrawsFunctions drawer, DrawingForm form) {
-		this.drawer = drawer;
+	public CalculatingWorker(DrawingForm form) {
 		this.form = form;
-		varMap.put("t", new double[] {});
 	}
 
 	/**
@@ -94,8 +92,8 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 			// interrupting edt? shouldn't happen
 			Thread.currentThread().interrupt();
 		} catch (ExecutionException e) {
-			JOptionPane.showMessageDialog(this.form, "Incorrect function\n"
-					+ e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this.form, e.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
 			this.stop();
 		}
 	}
@@ -113,7 +111,7 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 	}
 
 	public synchronized void modifyVarMap(String variable, double[] values) {
-		varMap.put(variable, values);
+		this.varMap.put(variable, values);
 	}
 
 	public synchronized void setTime(double time) {
@@ -128,24 +126,11 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 	 * 
 	 * @param function
 	 *            function to add to the ones being evaluated
-	 *            <p>
-	 *            if <code>function</code> has more or less variables different
-	 *            than <i>t</i>than functions already being evaluated, the
-	 *            functions already being evaluated get removed
 	 * @return list of variables the function has
 	 * @throws RecognitionException
 	 */
-	public synchronized Set<String> addFunction(String function)
-			throws RecognitionException {
-		FunctionEvaluator evaluator = new FunctionEvaluator(function);
-
+	public synchronized Set<String> addFunction(FunctionEvaluator evaluator) {
 		Set<String> variables = evaluator.getVariables();
-		variables.add("t");
-		if (variables.size() != varMap.size()) {
-			removeAllVariablesFromMap();
-			this.evaluators.removeAll(this.evaluators);
-		}
-
 		this.evaluators.add(evaluator);
 		return variables;
 	}

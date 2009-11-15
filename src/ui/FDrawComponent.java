@@ -47,12 +47,12 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		return this.type;
 	}
 
-	private FDrawComponent() {
-
+	private FDrawComponent(CalculatingWorker cworker) {
+		this.cworker = cworker;
 	}
 
-	public static FDrawComponent createInstance() {
-		FDrawComponent drawComponent = new FDrawComponent();
+	public static FDrawComponent createInstance(CalculatingWorker cworker) {
+		FDrawComponent drawComponent = new FDrawComponent(cworker);
 		DrawerMouseListener dml = null;
 		dml = drawComponent.new DrawerMouseListener2d();
 
@@ -71,13 +71,12 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	 * @param rotation
 	 * @param precision
 	 */
-	public void startDrawing3d(CalculatingWorker cworker, double distance,
-			double[] rotation, int precision) {
+	public void set3dDrawingProperties(double distance, double[] rotation,
+			int precision) {
 		this.setType(Type.DRAW3D);
 
 		this.rotation = rotation;
 		this.distance = distance;
-		this.cworker = cworker;
 
 		calculate3D();
 		splitIntervals(precision);
@@ -87,11 +86,10 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	}
 
-	public void startDrawing2d(CalculatingWorker cworker, double xleft,
-			double xright, int precision) {
+	public void set2dDrawingProperties(double xleft, double xright,
+			int precision) {
 		this.setType(Type.DRAW2D);
 
-		this.cworker = cworker;
 		calculateXValues(xleft, xright, precision);
 
 		cworker.modifyVarMap("x", this.xvalues);
@@ -109,7 +107,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	 * @param precision
 	 */
 	public void modifyPrecsion3d(int precision) {
-		if (cworker != null && type == Type.DRAW3D) {
+		if (type == Type.DRAW3D) {
 			splitIntervals(precision);
 
 			cworker.modifyVarMap("x", xvalues);
@@ -118,7 +116,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	}
 
 	public void modifyPrecsion2d(int precision) {
-		if (cworker != null && type == Type.DRAW2D) {
+		if (type == Type.DRAW2D) {
 			calculateXValues(xvalues[0], xvalues[xvalues.length - 1], precision);
 			cworker.modifyVarMap("x", xvalues);
 		}
@@ -144,35 +142,26 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	}
 
 	private void modifAngles(double x, double y) {
-		if (cworker != null) {
-			rotation[0] += x;
-			rotation[1] += y;
-
-			calculate3D();
-		}
+		rotation[0] += x;
+		rotation[1] += y;
+		calculate3D();
 
 	}
 
 	private void zoomOut3d() {
-		if (cworker != null) {
-			distance += distance / REDCOEF;
-			calculate3D();
-			splitIntervals(xvalues.length);
-			cworker.modifyVarMap("x", xvalues);
-			cworker.modifyVarMap("y", yvalues);
-		}
-
+		distance += distance / REDCOEF;
+		calculate3D();
+		splitIntervals(xvalues.length);
+		cworker.modifyVarMap("x", xvalues);
+		cworker.modifyVarMap("y", yvalues);
 	}
 
 	private void zoomIn3d() {
-
-		if (cworker != null) {
-			distance -= distance / REDCOEF;
-			calculate3D();
-			splitIntervals(xvalues.length);
-			cworker.modifyVarMap("x", xvalues);
-			cworker.modifyVarMap("y", yvalues);
-		}
+		distance -= distance / REDCOEF;
+		calculate3D();
+		splitIntervals(xvalues.length);
+		cworker.modifyVarMap("x", xvalues);
+		cworker.modifyVarMap("y", yvalues);
 	}
 
 	private void zoomOut2d() {
@@ -291,10 +280,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private void draw3dGraphs(Graphics g) {
 
-		// if drawing not started yet, do nothing
-		if (cworker == null)
-			return;
-
 		double pixelRangeX = (xvalues[xvalues.length - 1] - xvalues[0])
 				/ getWidth();
 
@@ -310,11 +295,12 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 		for (Matrix<Double> matrix : matrixesToDraw) {
 			/*
-			 * matrix.getMatrixSize()[0] - x axis values on the result matrix
+			 * matrix.getMatrixSize()[1] - x axis values on the result matrix
 			 * skip if precision was changed and matrixes received from the
 			 * calculating worker are no longer consistent
 			 */
-			if (matrix.getMatrixSize()[0] != xvalues.length)
+			if (matrix.getDimNo() != 3
+					|| matrix.getMatrixSize()[0] != xvalues.length)
 				break;
 
 			g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
@@ -390,9 +376,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private void draw2dGraphs(Graphics g) {
 
-		if (cworker == null)
-			return;
-
 		draw2dAxis(g);
 
 		double pixelRange = (xvalues[xvalues.length - 1] - xvalues[0])
@@ -401,11 +384,8 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 		for (Matrix<Double> matrix : matrixesToDraw) {
 
-			// matrix.getMatrixSize()[0] - x axis values on the result matrix
-			// skip if precision was changed and matrixes received from the
-			// calculating worker are no
-			// longer consistent
-			if (matrix.getMatrixSize()[0] != xvalues.length)
+			if (matrix.getDimNo() != 2
+					|| matrix.getMatrixSize()[0] != xvalues.length)
 				break;
 
 			g.setColor(new Color(rand.nextFloat(), rand.nextFloat(), rand
@@ -454,8 +434,8 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private static final double REDCOEF = 50;
 
-	private double xvalues[];
-	private double yvalues[];
+	private double xvalues[] = new double[] { 0 };
+	private double yvalues[] = new double[] { 0 };
 
 	private double ybottom = -2;
 
