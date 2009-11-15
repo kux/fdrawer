@@ -10,13 +10,15 @@ options {
 @header {
 package parser;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 }
 
 @members {
 /** Map variable name to Integer object holding value */
 	private HashMap<String, Double> memory = new HashMap<String,Double>();
-	private List<String> variables = new ArrayList<String>();
-	private List<String> undefinedVariables = new ArrayList<String>();
+	private Set<String> variables = new HashSet<String>();
+	private Set<String> undefinedVariables = new HashSet<String>();
 	
 	public HashMap<String, Double> getMemory(){
 		return memory;
@@ -32,11 +34,11 @@ import java.util.HashMap;
 		throw new UncheckedParserException(msg);
 	}
 	
-	public List<String> getVariables(){
+	public Set<String> getVariables(){
 		return variables;
 	}
 	
-	public List<String> getUndefinedVariables(){
+	public Set<String> getUndefinedVariables(){
 		return undefinedVariables;
 	}
 
@@ -64,15 +66,13 @@ expr returns [double value]
     |   ^('+'   v=expr )     {$value = v; }
     |   ^('pow' a=expr b=expr) {$value = Math.pow(a,b);}
     |   ID 
-        {
-        	if(!variables.contains($ID.text))
-        		variables.add($ID.text);
+        {        	
+        	variables.add($ID.text);
         	Double d = (Double)memory.get($ID.text);
         	if ( d!=null ){
         		 $value = d.doubleValue();
-        	}else{
-        		if(!undefinedVariables.contains($ID.text))
-        			undefinedVariables.add($ID.text);
+        	}else{        		
+        		undefinedVariables.add($ID.text);
         		// throw new UndefinedVariableException("undefined variable "+$ID.text);
         	} 
         }

@@ -2,9 +2,7 @@ package model;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Set;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -47,9 +45,9 @@ public class FunctionEvaluator {
 			this.evaluator.expr();
 		} catch (RecognitionException ignored) {
 		}
-		List<String> variables = this.evaluator.getUndefinedVariables();
+		Set<String> variables = this.evaluator.getUndefinedVariables();
 		this.evaluator.reset();
-		return new HashSet<String>(variables);
+		return variables;
 	}
 
 	/**
