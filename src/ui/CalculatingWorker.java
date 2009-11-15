@@ -2,8 +2,10 @@ package ui;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.JOptionPane;
@@ -32,8 +34,6 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 	public CalculatingWorker(DrawsFunctions drawer, DrawingForm form) {
 		this.drawer = drawer;
 		this.form = form;
-		varMap.put("x", new double[] {});
-		varMap.put("y", new double[] {});
 		varMap.put("t", new double[] {});
 	}
 
@@ -95,9 +95,7 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 			Thread.currentThread().interrupt();
 		} catch (ExecutionException e) {
 			JOptionPane.showMessageDialog(this.form, "Incorrect function\n"
-					+ e.getMessage()
-					+ "\nOnly x, y, t variables are supported !!", "Error",
-					JOptionPane.ERROR_MESSAGE);
+					+ e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			this.stop();
 		}
 	}
@@ -130,15 +128,37 @@ class CalculatingWorker extends SwingWorker<Void, List<Matrix<Double>>> {
 	 * 
 	 * @param function
 	 *            function to add to the ones being evaluated
+	 *            <p>
+	 *            if <code>function</code> has more or less variables different
+	 *            than <i>t</i>than functions already being evaluated, the
+	 *            functions already being evaluated get removed
 	 * @return list of variables the function has
 	 * @throws RecognitionException
 	 */
-	public synchronized List<String> addFunction(String function)
+	public synchronized Set<String> addFunction(String function)
 			throws RecognitionException {
 		FunctionEvaluator evaluator = new FunctionEvaluator(function);
-		List<String> variables = evaluator.getVariables();
+
+		Set<String> variables = evaluator.getVariables();
+		variables.add("t");
+		if (variables.size() != varMap.size()) {
+			removeAllVariablesFromMap();
+			this.evaluators.removeAll(this.evaluators);
+		}
+
 		this.evaluators.add(evaluator);
 		return variables;
 	}
 
+	public synchronized void removeAllDrawnFunctions() {
+		removeAllVariablesFromMap();
+		this.evaluators.removeAll(this.evaluators);
+	}
+
+	private void removeAllVariablesFromMap() {
+		Set<String> variables = new HashSet<String>(varMap.keySet());
+		for (String key : variables) {
+			varMap.remove(key);
+		}
+	}
 }

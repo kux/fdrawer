@@ -6,7 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -19,6 +21,7 @@ import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -26,8 +29,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
 import org.antlr.runtime.RecognitionException;
-
-import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
 public class DrawingForm extends javax.swing.JFrame {
@@ -44,11 +45,12 @@ public class DrawingForm extends javax.swing.JFrame {
 
 	private JLabel timeLabel = new JLabel("t = ");
 	private JButton pauseButton = new JButton("Pause");
+	private JButton resetButton = new JButton("Reset");
 
 	private NumberFormat nformatter = NumberFormat.getInstance();
 
-	public DrawingForm() {
-		super();
+	public DrawingForm(String title) {
+		super(title);
 		initGUI();
 		this.cworker = new CalculatingWorker(functionDrawer, this);
 		nformatter.setMaximumFractionDigits(2);
@@ -68,6 +70,7 @@ public class DrawingForm extends javax.swing.JFrame {
 				mainPanel.setLayout(mainPanelLayout);
 				{
 					this.configPanel = new JPanel();
+					this.configPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 					BoxLayout configPanelLayout = new BoxLayout(configPanel,
 							BoxLayout.Y_AXIS);
 
@@ -78,8 +81,8 @@ public class DrawingForm extends javax.swing.JFrame {
 					{
 
 						JScrollPane functionScroll = new JScrollPane();
-						functionScroll.setPreferredSize(new Dimension(250, 99));
-						functionScroll.setMaximumSize(new Dimension(250, 99));
+						functionScroll.setPreferredSize(new Dimension(300, 99));
+						functionScroll.setMaximumSize(new Dimension(300, 99));
 
 						this.configPanel.add(Box.createRigidArea(new Dimension(
 								0, 10)));
@@ -87,71 +90,7 @@ public class DrawingForm extends javax.swing.JFrame {
 
 						{
 
-							TableModel functionTableModel = new AbstractTableModel() {
-								private String[] columns = { "functions",
-										"draw" };
-
-								private Object[][] data = {
-										{ "sin(x+t)+cos(y+t)",
-												new Boolean(false) },
-										{ "sin(x+t/2)*pow(x,2)",
-												new Boolean(true) },
-										{ "cos(x+t/4)*pow(x,2)",
-												Boolean.valueOf(false) },
-										{ "pow(x,2)", Boolean.valueOf(false) },
-										{ "-pow(x,2)", Boolean.valueOf(false) } };
-
-								@Override
-								public int getColumnCount() {
-									return columns.length;
-								}
-
-								@Override
-								public int getRowCount() {
-									return data.length;
-								}
-
-								@Override
-								public Object getValueAt(int rowIndex,
-										int columnIndex) {
-									return data[rowIndex][columnIndex];
-								}
-
-								@Override
-								public String getColumnName(int col) {
-									return columns[col];
-								}
-
-								@Override
-								public Class<?> getColumnClass(int c) {
-									return getValueAt(0, c).getClass();
-								}
-
-								@Override
-								public boolean isCellEditable(int row, int col) {
-									return true;
-								}
-
-								@Override
-								public void setValueAt(Object value, int row,
-										int col) {
-									if (col == 1) {
-										for (int i = 0; i < data.length; ++i) {
-											data[i][1] = Boolean.FALSE;
-											if (i == row) {
-												data[i][1] = value;
-											}
-											fireTableCellUpdated(i, col);
-										}
-										requestDrawing();
-									} else {
-										data[row][col] = value;
-										fireTableCellUpdated(row, col);
-									}
-								}
-
-							};
-
+							TableModel functionTableModel = new DrawingTableModel();
 							this.functionTable = new JTable();
 							this.functionTable.setAlignmentX(CENTER_ALIGNMENT);
 							functionScroll.setViewportView(functionTable);
@@ -164,19 +103,26 @@ public class DrawingForm extends javax.swing.JFrame {
 
 					{
 						JPanel precisionPanel = new JPanel();
-						precisionPanel.setMaximumSize(new Dimension(250, 30));
+						precisionPanel.setMaximumSize(new Dimension(300, 30));
+						precisionPanel.setLayout(new BoxLayout(precisionPanel,
+								BoxLayout.X_AXIS));
 
 						precisionPanel.add(new JLabel("precision:"));
+						precisionPanel.add(Box.createHorizontalGlue());
 						this.precisionSlider = new JSlider();
 						this.precisionSlider.setMinimum(15);
 						this.precisionSlider.setMaximum(30);
 						this.precisionSlider.setValue(20);
-						this.precisionSlider.setPreferredSize(new Dimension(80,
+						this.precisionSlider.setPreferredSize(new Dimension(90,
 								20));
+						this.precisionSlider.setMaximumSize(new Dimension(90,
+								20));
+						precisionPanel.add(Box.createHorizontalGlue());
 
 						precisionPanel.add(this.precisionSlider);
 						this.drawButton = new JButton();
 						this.drawButton.setPreferredSize(new Dimension(90, 20));
+						this.drawButton.setMaximumSize(new Dimension(90, 20));
 						this.drawButton.setText("Draw");
 
 						precisionPanel.add(drawButton);
@@ -186,12 +132,20 @@ public class DrawingForm extends javax.swing.JFrame {
 
 					{
 						JPanel timePanel = new JPanel();
-						timePanel.setMaximumSize(new Dimension(240, 30));
+						timePanel.setMaximumSize(new Dimension(300, 30));
 						timePanel.setLayout(new BoxLayout(timePanel,
 								BoxLayout.X_AXIS));
 
-						this.timeLabel.setMinimumSize(new Dimension(50, 20));
+						this.timeLabel.setMinimumSize(new Dimension(60, 20));
+						this.timeLabel.setPreferredSize(new Dimension(60, 20));
+						this.timeLabel.setMaximumSize(new Dimension(60, 20));
 						timePanel.add(this.timeLabel);
+						timePanel.add(Box.createHorizontalGlue());
+
+						timePanel.add(this.resetButton);
+						this.resetButton
+								.setPreferredSize(new Dimension(80, 20));
+						this.resetButton.setMaximumSize(new Dimension(80, 20));
 						timePanel.add(Box.createHorizontalGlue());
 
 						timePanel.add(this.pauseButton);
@@ -238,8 +192,10 @@ public class DrawingForm extends javax.swing.JFrame {
 		this.precisionSlider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				functionDrawer.modifyPrecsion(getActualPrecsion());
-
+				if (functionDrawer.getType() == FDrawComponent.Type.DRAW3D)
+					functionDrawer.modifyPrecsion3d(get3dPrecision());
+				else
+					functionDrawer.modifyPrecsion2d(get2dPrecision());
 			}
 		});
 
@@ -258,13 +214,27 @@ public class DrawingForm extends javax.swing.JFrame {
 				}
 			}
 		});
+
+		this.resetButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				DrawingForm.this.cworker.setTime(0);
+			}
+		});
 	}
 
-	private int getActualPrecsion() {
+	private int get3dPrecision() {
 		return (int) Math.pow(1.2, this.precisionSlider.getValue());
 	}
 
+	private int get2dPrecision() {
+		return (int) Math.pow(1.4, this.precisionSlider.getValue());
+	}
+
 	private void requestDrawing() {
+		cworker.removeAllDrawnFunctions();
+
 		TableModel tm = functionTable.getModel();
 		List<String> functions = new ArrayList<String>();
 		for (int i = 0; i < tm.getRowCount(); ++i) {
@@ -275,13 +245,23 @@ public class DrawingForm extends javax.swing.JFrame {
 		for (String function : functions) {
 			try {
 
-				this.cworker.addFunction(function);
-				functionDrawer.startDrawing(cworker, 5, new double[] {
-						Math.PI / 2, -Math.PI / 4, 0 }, getActualPrecsion());
-			} catch (UncheckedParserException e) {
-				JOptionPane.showMessageDialog(this, "Incorrect function "
-						+ function + "\n" + e.getMessage(), "Error",
-						JOptionPane.ERROR_MESSAGE);
+				Set<String> variables = this.cworker.addFunction(function);
+				List<String> allowedVariables = Arrays.asList(new String[] {
+						"x", "y", "t" });
+				if (allowedVariables.containsAll(variables)) {
+					if (variables.contains("x") && variables.contains("y")) {
+						functionDrawer.startDrawing3d(cworker, 5, new double[] {
+								Math.PI / 2, -Math.PI / 4, 0 },
+								get3dPrecision());
+					} else {
+						functionDrawer.startDrawing2d(cworker, -5, 5,
+								get2dPrecision());
+					}
+				} else {
+					JOptionPane.showMessageDialog(this, "Incorrect function "
+							+ function + "\nOnly x, y, t variables allowed",
+							"Error", JOptionPane.ERROR_MESSAGE);
+				}
 			} catch (RecognitionException e) {
 				JOptionPane.showMessageDialog(this, "Incorrect function "
 						+ function + "\n" + e.getMessage());
@@ -297,7 +277,7 @@ public class DrawingForm extends javax.swing.JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 
-				DrawingForm inst = new DrawingForm();
+				DrawingForm inst = new DrawingForm("Simple math tool");
 				inst.setLocationRelativeTo(null);
 				inst.setVisible(true);
 
@@ -306,6 +286,68 @@ public class DrawingForm extends javax.swing.JFrame {
 				inst.start();
 			}
 		});
+	}
+
+	private class DrawingTableModel extends AbstractTableModel {
+		private String[] columns = { "functions", "draw" };
+
+		private Object[][] data = { { "sin(x+t)+cos(y+t)", new Boolean(true) },
+				{ "sin(x+t/2)*pow(x,2)", new Boolean(false) },
+				{ "cos(x+t/4)*pow(x,2)", Boolean.valueOf(false) },
+				{ "pow(x,2)", Boolean.valueOf(false) },
+				{ "-pow(x,2)", Boolean.valueOf(false) } };
+
+		@Override
+		public int getColumnCount() {
+			return columns.length;
+		}
+
+		@Override
+		public int getRowCount() {
+			return data.length;
+		}
+
+		@Override
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			return data[rowIndex][columnIndex];
+		}
+
+		@Override
+		public String getColumnName(int col) {
+			return columns[col];
+		}
+
+		@Override
+		public Class<?> getColumnClass(int c) {
+			return getValueAt(0, c).getClass();
+		}
+
+		@Override
+		public boolean isCellEditable(int row, int col) {
+			return true;
+		}
+
+		@Override
+		public void setValueAt(Object value, int row, int col) {
+			if (col == 1) {
+				removeRest(value, row, col);
+			} else {
+				data[row][col] = value;
+				fireTableCellUpdated(row, col);
+			}
+			requestDrawing();
+		}
+
+		private void removeRest(Object value, int row, int col) {
+			for (int i = 0; i < data.length; ++i) {
+				data[i][1] = Boolean.FALSE;
+				if (i == row) {
+					data[i][1] = value;
+				}
+				fireTableCellUpdated(i, col);
+			}
+		}
+
 	}
 
 }

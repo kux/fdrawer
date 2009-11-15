@@ -65,12 +65,14 @@ expr returns [double value]
     |   ^('pow' a=expr b=expr) {$value = Math.pow(a,b);}
     |   ID 
         {
-        	variables.add($ID.text);
+        	if(!variables.contains($ID.text))
+        		variables.add($ID.text);
         	Double d = (Double)memory.get($ID.text);
         	if ( d!=null ){
         		 $value = d.doubleValue();
         	}else{
-        		undefinedVariables.add($ID.text);
+        		if(!undefinedVariables.contains($ID.text))
+        			undefinedVariables.add($ID.text);
         		// throw new UndefinedVariableException("undefined variable "+$ID.text);
         	} 
         }

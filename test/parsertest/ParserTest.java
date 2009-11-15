@@ -126,4 +126,13 @@ public class ParserTest {
 		System.out.println(result);
 		Assert.assertEquals(2, walker.getUndefinedVariables().size());
 	}
+
+	@Test
+	public void getVariablesUndefinedXTwice() throws IOException,
+			RecognitionException {
+		Eval walker = initEvaluator("x+y+x)");
+		double result = walker.entry();
+		System.out.println(result);
+		Assert.assertEquals(2, walker.getUndefinedVariables().size());
+	}
 }

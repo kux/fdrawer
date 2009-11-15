@@ -2,6 +2,7 @@ package model;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -41,14 +42,14 @@ public class FunctionEvaluator {
 		return function;
 	}
 
-	public List<String> getVariables() {
+	public Set<String> getVariables() {
 		try {
 			this.evaluator.expr();
 		} catch (RecognitionException ignored) {
 		}
 		List<String> variables = this.evaluator.getUndefinedVariables();
 		this.evaluator.reset();
-		return variables;
+		return new HashSet<String>(variables);
 	}
 
 	/**

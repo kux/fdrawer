@@ -24,7 +24,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private Type type;
 
-	public void setType(Type type) {
+	private void setType(Type type) {
 		if (type != this.type) {
 			this.type = type;
 			this.removeMouseListener(this.getMouseListeners()[0]);
@@ -41,6 +41,10 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 			this.addMouseMotionListener(dml);
 			this.addMouseWheelListener(dml);
 		}
+	}
+
+	public Type getType() {
+		return this.type;
 	}
 
 	private FDrawComponent() {
@@ -67,8 +71,9 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	 * @param rotation
 	 * @param precision
 	 */
-	public void startDrawing(CalculatingWorker cworker, double distance,
+	public void startDrawing3d(CalculatingWorker cworker, double distance,
 			double[] rotation, int precision) {
+		this.setType(Type.DRAW3D);
 
 		this.rotation = rotation;
 		this.distance = distance;
@@ -82,6 +87,16 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	}
 
+	public void startDrawing2d(CalculatingWorker cworker, double xleft,
+			double xright, int precision) {
+		this.setType(Type.DRAW2D);
+
+		this.cworker = cworker;
+		calculateXValues(xleft, xright, precision);
+
+		cworker.modifyVarMap("x", this.xvalues);
+	}
+
 	public void drawMatrixes(List<Matrix<Double>> toDraw) {
 		this.matrixesToDraw = toDraw;
 		repaint();
@@ -93,12 +108,19 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	 * 
 	 * @param precision
 	 */
-	public void modifyPrecsion(int precision) {
-		if (cworker != null) {
+	public void modifyPrecsion3d(int precision) {
+		if (cworker != null && type == Type.DRAW3D) {
 			splitIntervals(precision);
 
 			cworker.modifyVarMap("x", xvalues);
 			cworker.modifyVarMap("y", yvalues);
+		}
+	}
+
+	public void modifyPrecsion2d(int precision) {
+		if (cworker != null && type == Type.DRAW2D) {
+			calculateXValues(xvalues[0], xvalues[xvalues.length - 1], precision);
+			cworker.modifyVarMap("x", xvalues);
 		}
 	}
 
@@ -222,7 +244,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		if (type == Type.DRAW3D)
 			draw3dGraphs(g);
 		else
-			draw2dAxis(g);
+			draw2dGraphs(g);
 	}
 
 	private double[] translate(double a[], double[] c, double[] o) {
