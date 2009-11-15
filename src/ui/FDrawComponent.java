@@ -68,7 +68,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		drawComponent.addMouseWheelListener(dml);
 
 		drawComponent.setType(Type.DRAW3D);
-		drawComponent.schedueleDrawing();
 		return drawComponent;
 	}
 
@@ -104,11 +103,8 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 	}
 
 	public void drawMatrixes(List<Matrix<Double>> toDraw) {
-		System.out.println("added to draw");
-		this.drawingQueue.add(toDraw);
-		System.out.println("drawing queue size: " + drawingQueue.size());
-		// this.matrixesToDraw = toDraw;
-		// repaint();
+		this.matrixesToDraw = toDraw;
+		repaint();
 	}
 
 	/**
@@ -450,36 +446,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	}
 
-	private void schedueleDrawing() {
-		drawingSchedueler.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				SwingUtilities.invokeLater(new Runnable() {
-
-					@Override
-					public void run() {
-
-						if (!waiting) {
-							if (FDrawComponent.this.drawingQueue.size() != 0) {
-								FDrawComponent.this.matrixesToDraw = FDrawComponent.this.drawingQueue
-										.remove(0);
-								FDrawComponent.this.repaint();
-							} else {
-								waiting = true;
-							}
-						} else {
-							if (FDrawComponent.this.drawingQueue.size() > 200) {
-								waiting = false;
-							}
-						}
-					}
-				});
-			}
-
-		}, 50, 50, TimeUnit.MILLISECONDS);
-
-	}
-
 	private boolean waiting = true;
 
 	private static final double REDCOEF = 50;
@@ -497,17 +463,12 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private List<Matrix<Double>> matrixesToDraw = new ArrayList<Matrix<Double>>();
 
-	private List<List<Matrix<Double>>> drawingQueue = new ArrayList<List<Matrix<Double>>>();
-
 	private CalculatingWorker cworker = null;
 
 	private int xPointer = -1;
 	private int yPointer = -1;
 
 	private NumberFormat nformatter = NumberFormat.getInstance();
-
-	private ScheduledExecutorService drawingSchedueler = Executors
-			.newSingleThreadScheduledExecutor();
 
 	private interface DrawerMouseListener extends MouseWheelListener,
 			MouseMotionListener, MouseListener {
