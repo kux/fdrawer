@@ -3,7 +3,7 @@
 	<property name="src.dir" location="src" />
 	<property name="lib.dir" location="lib" />
 	<property name="test.src.dir" location="test" />
-	<property name="parser.dir" location="${src.dir}/grammar" />
+	<property name="grammar.dir" location="${src.dir}/grammar" />
 
 	<property name="build.dir" location="build" />
 	<property name="build.class.dir" location="${build.dir}/classes" />
@@ -12,10 +12,36 @@
 	<property name="build.fprod" location="${build.dir}/deploy/fdrawer.jar" />
 
 
-	<property name="grammar.file" value="${parser.dir}/Expr.g" />
-	<property name="eval.file" value="${parser.dir}/Eval.g" />
+	<property name="grammar.file" value="${grammar.dir}/Expr.g" />
+	<property name="eval.file" value="${grammar.dir}/Eval.g" />
 	<property name="reports.tests" value="testresult" />
 
+	<condition property="is.unix">
+		<os family="unix" />
+	</condition>
+
+	<condition property="is.windows">
+		<os family="windows" />
+	</condition>
+
+
+	<target name="move.parsers.win" if="is.windows">
+		<echo>Windows</echo>
+		<move file="${src.dir}/ExprLexer.java" todir="${src.dir}/parser" />
+		<move file="${src.dir}/ExprParser.java" todir="${src.dir}/parser" />
+		<move file="${src.dir}/Eval.java" todir="${src.dir}/parser" />
+		<move file="${basedir}/Expr.tokens" todir="${src.dir}/parser" />
+		<move file="${basedir}/Eval.tokens" todir="${src.dir}/parser" />
+	</target>
+
+	<target name="move.parsers.nix" if="is.unix">
+		<echo>Unix</echo>
+		<move file="${grammar.dir}/ExprLexer.java" todir="${src.dir}/parser" />
+		<move file="${grammar.dir}/ExprParser.java" todir="${src.dir}/parser" />
+		<move file="${grammar.dir}/Eval.java" todir="${src.dir}/parser" />
+		<move file="${basedir}/Expr.tokens" todir="${src.dir}/parser" />
+		<move file="${basedir}/Eval.tokens" todir="${src.dir}/parser" />
+	</target>
 
 	<target name="parser" depends="clean.parser" description="Generate java lexer and parser from ANTLR grammar file">
 
@@ -29,11 +55,8 @@
 			<arg value="${eval.file}" />
 		</java>
 
-		<move file="${parser.dir}/ExprLexer.java" todir="${src.dir}/parser" />
-		<move file="${parser.dir}/ExprParser.java" todir="${src.dir}/parser" />
-		<move file="${parser.dir}/Eval.java" todir="${src.dir}/parser" />
-		<move file="${basedir}/Expr.tokens" todir="${src.dir}/parser" />
-		<move file="${basedir}/Eval.tokens" todir="${src.dir}/parser" />
+		<antcall target="move.parsers.win" />
+		<antcall target="move.parsers.nix" />
 
 	</target>
 
@@ -60,6 +83,7 @@
 
 	<path id="compile.classpath">
 		<pathelement location="${lib.dir}/antlr-3.1.3.jar" />
+		<pathelement location="${lib.dir}/log4j-1.2.15.jar" />
 	</path>
 
 	<target name="compile" depends="parser, init" description="Compiles all .java project files">
@@ -91,6 +115,7 @@
 
 	<target name="build" depends="test" description="Builds application. Executable jar: fdrawer.jar">
 		<unzip src="${lib.dir}/antlr-3.1.3.jar" dest="${build.class.dir}" />
+		<unzip src="${lib.dir}/log4j-1.2.15.jar" dest="${build.class.dir}" />
 		<jar destfile="${build.fprod}" basedir="${build.class.dir}" includes="**/*.class">
 			<manifest>
 				<attribute name="Main-Class" value="ui.DrawingForm" />

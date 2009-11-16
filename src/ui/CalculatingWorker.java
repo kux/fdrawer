@@ -17,8 +17,10 @@ import model.FunctionEvaluator;
 import model.Matrix;
 
 import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
 
 class CalculatingWorker {
+	private static Logger logger = Logger.getLogger(CalculatingWorker.class);
 
 	public CalculatingWorker(DrawingForm form) {
 		this.form = form;
@@ -50,16 +52,20 @@ class CalculatingWorker {
 	}
 
 	public synchronized void modifyVarMap(String variable, double[] values) {
+
+		logger.debug("modifying var map on " + variable);
 		this.drawingQueue.removeAll(this.drawingQueue);
 		this.queueEnabled = false;
+		logger.debug("schedule queue re-enable");
 		schedueler.schedule(new Runnable() {
 
 			@Override
 			public void run() {
+				logger.debug("queue reenabled");
 				CalculatingWorker.this.queueEnabled = true;
 			}
 
-		}, 10, TimeUnit.SECONDS);
+		}, 2, TimeUnit.SECONDS);
 		this.varMap.put(variable, values);
 	}
 
@@ -105,6 +111,7 @@ class CalculatingWorker {
 			public void run() {
 
 				if (drawingQueue.size() > 100) {
+					logger.debug("switched waiting to FALSE");
 					waiting = false;
 					form.setProgress(100);
 				} else {
@@ -115,6 +122,7 @@ class CalculatingWorker {
 
 					final MatrixesMomentPair toDraw = drawingQueue.poll();
 					if (toDraw == null) {
+						logger.debug("switched waiting to TRUE");
 						waiting = true;
 					} else {
 
@@ -186,6 +194,7 @@ class CalculatingWorker {
 	}
 
 	private void removeAllVariablesFromMap() {
+		logger.debug("removing all variables from varMap");
 		Set<String> variables = new HashSet<String>(varMap.keySet());
 		for (String key : variables) {
 			varMap.remove(key);

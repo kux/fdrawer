@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -31,11 +32,15 @@ import javax.swing.table.TableModel;
 import model.FunctionEvaluator;
 
 import org.antlr.runtime.RecognitionException;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
 public class DrawingForm extends javax.swing.JFrame {
+
+	private static Logger logger = Logger.getLogger(DrawingForm.class);
 
 	private CalculatingWorker cworker;
 
@@ -49,7 +54,7 @@ public class DrawingForm extends javax.swing.JFrame {
 	private JLabel timeLabel = new JLabel("t = ");
 	private JButton pauseButton = new JButton("Pause");
 	private JButton resetButton = new JButton("Reset");
-	JProgressBar drawingProgress = new JProgressBar(0, 100);
+	private JProgressBar drawingProgress = new JProgressBar(0, 100);
 
 	private NumberFormat nformatter = NumberFormat.getInstance();
 
@@ -184,9 +189,17 @@ public class DrawingForm extends javax.swing.JFrame {
 								new java.awt.Color(0, 0, 0), 1, false));
 					}
 
+					JPanel drawingBottom = new JPanel();
+					drawingBottom.setLayout(new BorderLayout());
+
 					drawingProgress = new JProgressBar(0, 100);
 					drawingProgress.setValue(0);
-					drawingPanel.add(drawingProgress, BorderLayout.SOUTH);
+
+					drawingBottom.add(drawingProgress, BorderLayout.CENTER);
+					JCheckBox enableRealTime = new JCheckBox(
+							"real time drawing");
+					drawingBottom.add(enableRealTime, BorderLayout.EAST);
+					drawingPanel.add(drawingBottom, BorderLayout.SOUTH);
 				}
 			}
 			pack();
@@ -411,9 +424,13 @@ public class DrawingForm extends javax.swing.JFrame {
 	}
 
 	public static void main(String[] args) {
+		PropertyConfigurator.configure(DrawingForm.class.getClassLoader()
+				.getResource("logging.properties"));
+
+		logger.info("started");
+
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-
 				DrawingForm inst = new DrawingForm("Simple math tool");
 				inst.setLocationRelativeTo(null);
 				inst.setVisible(true);
