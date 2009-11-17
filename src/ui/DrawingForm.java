@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +57,7 @@ public class DrawingForm extends javax.swing.JFrame {
 	private JButton pauseButton = new JButton("Pause");
 	private JButton resetButton = new JButton("Reset");
 	private JProgressBar drawingProgress = new JProgressBar(0, 100);
+	private JCheckBox enableRealTime = new JCheckBox("real time drawing");
 
 	private NumberFormat nformatter = NumberFormat.getInstance();
 
@@ -196,9 +199,8 @@ public class DrawingForm extends javax.swing.JFrame {
 					drawingProgress.setValue(0);
 
 					drawingBottom.add(drawingProgress, BorderLayout.CENTER);
-					JCheckBox enableRealTime = new JCheckBox(
-							"real time drawing");
 					drawingBottom.add(enableRealTime, BorderLayout.EAST);
+					enableRealTime.setSelected(true);
 					drawingPanel.add(drawingBottom, BorderLayout.SOUTH);
 				}
 			}
@@ -243,6 +245,19 @@ public class DrawingForm extends javax.swing.JFrame {
 				DrawingForm.this.cworker.setTime(0);
 			}
 		});
+
+		enableRealTime.addItemListener(new ItemListener() {
+
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					cworker.setQueueEnabled(true);
+				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+					cworker.setQueueEnabled(false);
+				}
+
+			}
+		});
 	}
 
 	private int get3dPrecision() {
@@ -250,7 +265,7 @@ public class DrawingForm extends javax.swing.JFrame {
 	}
 
 	private int get2dPrecision() {
-		return (int) Math.pow(1.3, this.precisionSlider.getValue());
+		return (int) Math.pow(1.4, this.precisionSlider.getValue());
 	}
 
 	private void start() {

@@ -6,7 +6,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,24 +53,6 @@ class CalculatingWorker {
 		this.pauzed = false;
 	}
 
-	public synchronized void modifyVarMap(String variable, double[] values) {
-
-		logger.debug("modifying var map on " + variable);
-		this.drawingQueue.removeAll(this.drawingQueue);
-		this.queueEnabled = false;
-		logger.debug("schedule queue re-enable");
-		schedueler.schedule(new Runnable() {
-
-			@Override
-			public void run() {
-				logger.debug("queue reenabled");
-				CalculatingWorker.this.queueEnabled = true;
-			}
-
-		}, 2, TimeUnit.SECONDS);
-		this.varMap.put(variable, values);
-	}
-
 	public synchronized void setTime(double time) {
 		drawingQueue.removeAll(drawingQueue);
 		this.time = time;
@@ -102,6 +86,15 @@ class CalculatingWorker {
 		drawingQueue.removeAll(drawingQueue);
 	}
 
+	public boolean isQueueEnabled() {
+		return queueEnabled;
+	}
+
+	public void setQueueEnabled(boolean queueEnabled) {
+		drawingQueue.removeAll(drawingQueue);
+		this.queueEnabled = queueEnabled;
+	}
+
 	public void start() {
 		Thread calculator = new Thread(new Calculator());
 		calculator.start();
@@ -110,20 +103,24 @@ class CalculatingWorker {
 			@Override
 			public void run() {
 
-				if (drawingQueue.size() > 100) {
-					logger.debug("switched waiting to FALSE");
+				if (waiting && drawingQueue.size() > 100) {
+					logger
+							.debug("switched waiting to FALSE, drawingQueue.size =  "
+									+ drawingQueue.size());
 					waiting = false;
 					form.setProgress(100);
 				} else {
 					form.setProgress(drawingQueue.size());
 				}
 
-				if ((!queueEnabled || !waiting) && !pauzed) {
+				if ((!waitingEnabled || !waiting) && !pauzed) {
 
 					final MatrixesMomentPair toDraw = drawingQueue.poll();
 					if (toDraw == null) {
-						logger.debug("switched waiting to TRUE");
-						waiting = true;
+						if (!waiting) {
+							logger.debug("switched waiting to TRUE");
+							waiting = true;
+						}
 					} else {
 
 						SwingUtilities.invokeLater(new Runnable() {
@@ -138,18 +135,63 @@ class CalculatingWorker {
 
 				}
 			}
-		}, 50, 50, TimeUnit.MILLISECONDS);
+		}, 100, 100, TimeUnit.MILLISECONDS);
 	}
 
+	private FutureTask<Void> queueRenableTask;
+	private volatile boolean waitingEnabled = true;
 	private volatile boolean waiting = true;
-	private volatile boolean queueEnabled = false;
+
+	/**
+	 * 
+	 * @param variable
+	 * @param values
+	 * @throws IllegalArgumentException
+	 *             if <code>values</code> is null or empty
+	 */
+	public synchronized void modifyVarMap(String variable, double[] values) {
+
+		if (values == null || values.length == 0) {
+			throw new IllegalArgumentException();
+		}
+
+		logger.debug("modifying var map on " + variable + " : [" + values[0]
+				+ "," + values[values.length - 1] + "]");
+		this.varMap.put(variable, values);
+
+		drawingQueue.removeAll(this.drawingQueue);
+
+		if (waitingEnabled) {
+			waitingEnabled = false;
+			logger.debug("schedule queue re-enable");
+
+			// if scheduled before but not executed, cancel it
+			if (queueRenableTask != null && !queueRenableTask.isDone()) {
+				queueRenableTask.cancel(true);
+			}
+
+			// and schedule again
+			queueRenableTask = new FutureTask<Void>(new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					logger.debug("queue reenabled");
+					CalculatingWorker.this.waitingEnabled = true;
+					return null;
+				}
+
+			});
+
+			schedueler.schedule(queueRenableTask, 4, TimeUnit.SECONDS);
+
+		}
+	}
 
 	private class Calculator implements Runnable {
 		@Override
 		public void run() {
 			while (calculate && !Thread.currentThread().isInterrupted()) {
 
-				List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
+				final List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
 
 				synchronized (CalculatingWorker.this) {
 
@@ -160,11 +202,21 @@ class CalculatingWorker {
 
 					}
 				}
+				if (queueEnabled) {
+					try {
+						drawingQueue.put(new MatrixesMomentPair(time, results));
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				} else {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							drawer.drawMatrixes(results);
+							form.setTime(time);
 
-				try {
-					drawingQueue.put(new MatrixesMomentPair(time, results));
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
+						}
+					});
 				}
 
 				time += timeIncrement;
@@ -211,6 +263,8 @@ class CalculatingWorker {
 	private List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
 	private volatile boolean calculate = true;
 	private volatile boolean pauzed;
+
+	private volatile boolean queueEnabled = true;
 
 	private double time = 0;
 	private double timeIncrement = 0.1;
