@@ -53,12 +53,12 @@ class CalculatingWorker {
 		this.pauzed = false;
 	}
 
-	public synchronized void setTime(double time) {
+	public void setTime(double time) {
 		drawingQueue.removeAll(drawingQueue);
 		this.time = time;
 	}
 
-	public synchronized void setTimeIncrement(double timeIncrement) {
+	public void setTimeIncrement(double timeIncrement) {
 		this.timeIncrement = timeIncrement;
 	}
 
@@ -98,44 +98,49 @@ class CalculatingWorker {
 	public void start() {
 		Thread calculator = new Thread(new Calculator());
 		calculator.start();
-		schedueler.scheduleAtFixedRate(new Runnable() {
+		schedueler.scheduleAtFixedRate(
+				new Runnable() {
 
-			@Override
-			public void run() {
+					@Override
+					public void run() {
 
-				if (waiting && drawingQueue.size() > 100) {
-					logger
-							.debug("switched waiting to FALSE, drawingQueue.size =  "
-									+ drawingQueue.size());
-					waiting = false;
-					form.setProgress(100);
-				} else {
-					form.setProgress(drawingQueue.size());
-				}
-
-				if ((!waitingEnabled || !waiting) && !pauzed) {
-
-					final MatrixesMomentPair toDraw = drawingQueue.poll();
-					if (toDraw == null) {
-						if (!waiting) {
-							logger.debug("switched waiting to TRUE");
-							waiting = true;
+						if (waiting && drawingQueue.size() > 100) {
+							logger
+									.debug("switched waiting to FALSE, drawingQueue.size =  "
+											+ drawingQueue.size());
+							waiting = false;
+							form.setProgress(100);
+						} else {
+							form.setProgress(drawingQueue.size());
 						}
-					} else {
 
-						SwingUtilities.invokeLater(new Runnable() {
+						if ((!waitingEnabled || !waiting) && !pauzed) {
 
-							@Override
-							public void run() {
-								drawer.drawMatrixes(toDraw.getMatrixes());
-								form.setTime(toDraw.getMoment());
+							final MatrixesMomentPair toDraw = drawingQueue
+									.poll();
+							if (toDraw == null) {
+								if (!waiting) {
+									logger.debug("switched waiting to TRUE");
+									waiting = true;
+								}
+							} else {
+
+								SwingUtilities.invokeLater(new Runnable() {
+
+									@Override
+									public void run() {
+										drawer.drawMatrixes(toDraw
+												.getMatrixes());
+										form.setTime(toDraw.getMoment());
+									}
+								});
 							}
-						});
-					}
 
-				}
-			}
-		}, 100, 100, TimeUnit.MILLISECONDS);
+						}
+					}
+				}, (long) (timeIncrement * 1000),
+				(long) (timeIncrement * 1000),
+				TimeUnit.MILLISECONDS);
 	}
 
 	private FutureTask<Void> queueRenableTask;
@@ -267,7 +272,7 @@ class CalculatingWorker {
 	private volatile boolean queueEnabled = true;
 
 	private double time = 0;
-	private double timeIncrement = 0.1;
+	private volatile double timeIncrement = 0.1;
 
 	private DrawsFunctions drawer;
 	private final DrawingForm form;
