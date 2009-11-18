@@ -1,6 +1,7 @@
 package ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,11 +19,38 @@ import javax.swing.SwingUtilities;
 import model.FunctionEvaluator;
 import model.Matrix;
 
-import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
+/**
+ * class responsible for handling "data to be drawn" generation
+ * <p>
+ * calculated data is dispatched to the {@link DrawsFunctions} instance with that this
+ * CalculatingWorker is configured through it's
+ * {@link CalculatingWorker#setDrawer(DrawsFunctions)} method.
+ * <p>
+ * the function calculating is done in a calculating thread(
+ * {@link Calculator#run()}<br>
+ * 
+ * the calculating worker may run in two modes: <br>
+ * 1. dispatch calculated matrixes for drawing as soon as they are ready <br>
+ * 2. in real time drawing<br>
+ * In this case the drawing can be faster than the calculating can be done. To
+ * solve this problem, all calculated values are placed on a queue (
+ * {@link CalculatingWorker#drawingQueue}). While the queue size is below
+ * <code>QUEUE_WAITING_THRESHOLD</code> the drawing is blocked. After this
+ * threshold is passed, the drawing is unblocked by submitting 
+ * {@link QueuePoller} to the {@link CalculatingWorker#schedueler()} executor
+ * 
+ * 
+ * @author kux
+ * 
+ */
 class CalculatingWorker {
 	private static Logger logger = Logger.getLogger(CalculatingWorker.class);
+
+	private final static int QUEUE_REENABLE_INTERVAL = 4;
+	private final static int QUEUE_SIZE = 100;
+	private final static int QUEUE_WAITING_THRESHOLD = 50;
 
 	public CalculatingWorker(DrawingForm form) {
 		this.form = form;
@@ -62,21 +90,45 @@ class CalculatingWorker {
 		this.timeIncrement = timeIncrement;
 	}
 
+	public synchronized List<FunctionEvaluator> getDrawnFunctions() {
+		return evaluators;
+	}
+
 	/**
+	 * sets the function to be evaluated by this worker
 	 * 
-	 * @param function
-	 *            function to add to the ones being evaluated
-	 * @return list of variables the function has
-	 * @throws RecognitionException
+	 * @param evaluators
+	 * @throws IllegalArgumentException
+	 *             if the provided functions have different variables
 	 */
-	public synchronized Set<String> addFunction(FunctionEvaluator evaluator) {
+	public synchronized void setDrawnFunctions(List<FunctionEvaluator> evaluators) {
+		if (evaluators.size() == 0)
+			return;
+
+		Set<String> allowedVariables = evaluators.get(0).getVariables();
+
+		for (FunctionEvaluator eval : evaluators) {
+			Set<String> variables = eval.getVariables();
+			if (!variables.equals(allowedVariables)) {
+				throw new IllegalArgumentException("functions with different variables provided");
+			}
+		}
+
 		this.drawingQueue.removeAll(this.drawingQueue);
-		Set<String> variables = evaluator.getVariables();
-		this.evaluators.add(evaluator);
-		return variables;
+		this.evaluators = evaluators;
+
+		removeAllVariablesFromMap();
+		allowedVariables.remove("t");
+		for (String variable : allowedVariables) {
+			varMap.put(variable, new double[] {});
+		}
+
+		varMap.put("t", new double[] {});
+
 	}
 
 	public synchronized void removeAllDrawnFunctions() {
+		logger.debug("removing all drawin functions");
 		this.drawingQueue.removeAll(this.drawingQueue);
 		removeAllVariablesFromMap();
 		this.evaluators.removeAll(this.evaluators);
@@ -96,51 +148,98 @@ class CalculatingWorker {
 	}
 
 	public void start() {
-		Thread calculator = new Thread(new Calculator());
+		Thread calculator = new Thread(new Calculator(), "calculating thread");
 		calculator.start();
-		schedueler.scheduleAtFixedRate(
-				new Runnable() {
+		schedueler.scheduleAtFixedRate(new QueuePoller(), (long) (timeIncrement * 1000),
+				(long) (timeIncrement * 1000), TimeUnit.MILLISECONDS);
+	}
 
-					@Override
-					public void run() {
+	private class Calculator implements Runnable {
+		@Override
+		public void run() {
 
-						if (waiting && drawingQueue.size() > 100) {
-							logger
-									.debug("switched waiting to FALSE, drawingQueue.size =  "
-											+ drawingQueue.size());
-							waiting = false;
-							form.setProgress(100);
-						} else {
-							form.setProgress(drawingQueue.size());
-						}
+			int counter = 0;
+			long calculatingTime = 0;
 
-						if ((!waitingEnabled || !waiting) && !pauzed) {
+			while (calculate && !Thread.currentThread().isInterrupted()) {
 
-							final MatrixesMomentPair toDraw = drawingQueue
-									.poll();
-							if (toDraw == null) {
-								if (!waiting) {
-									logger.debug("switched waiting to TRUE");
-									waiting = true;
-								}
-							} else {
+				final List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
 
-								SwingUtilities.invokeLater(new Runnable() {
+				synchronized (CalculatingWorker.this) {
 
-									@Override
-									public void run() {
-										drawer.drawMatrixes(toDraw
-												.getMatrixes());
-										form.setTime(toDraw.getMoment());
-									}
-								});
-							}
+					Date start = new Date();
+					varMap.put("t", new double[] { time });
+					for (FunctionEvaluator feval : evaluators) {
 
-						}
+						results.add(feval.calculate(varMap));
+
 					}
-				}, (long) (timeIncrement * 1000),
-				(long) (timeIncrement * 1000),
-				TimeUnit.MILLISECONDS);
+					Date end = new Date();
+					calculatingTime += end.getTime() - start.getTime();
+					counter++;
+					if (counter % 100 == 0) {
+						counter = 0;
+						logger.debug("average calculating time: " + (double) calculatingTime / 100
+								+ " milliseconds");
+						calculatingTime = 0;
+					}
+
+					if (queueEnabled) {
+						try {
+							drawingQueue.put(new MatrixesMomentPair(time, results));
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						}
+					} else {
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								drawer.drawMatrixes(results);
+								form.setTime(time);
+
+							}
+						});
+					}
+					time += timeIncrement;
+				}
+			}
+		}
+	}
+
+	private class QueuePoller implements Runnable {
+
+		@Override
+		public void run() {
+			if (waiting && drawingQueue.size() > QUEUE_WAITING_THRESHOLD) {
+				logger.debug("switched waiting to FALSE, drawingQueue.size =  "
+						+ drawingQueue.size());
+				waiting = false;
+				form.setProgress(100);
+			} else {
+				form.setProgress((int) (100.0 / QUEUE_WAITING_THRESHOLD * drawingQueue.size()));
+			}
+
+			if ((!waitingEnabled || !waiting) && !pauzed) {
+
+				final MatrixesMomentPair toDraw = drawingQueue.poll();
+				if (toDraw == null) {
+					if (!waiting) {
+						logger.debug("switched waiting to TRUE");
+						waiting = true;
+					}
+				} else {
+
+					SwingUtilities.invokeLater(new Runnable() {
+
+						@Override
+						public void run() {
+							drawer.drawMatrixes(toDraw.getMatrixes());
+							form.setTime(toDraw.getMoment());
+						}
+					});
+				}
+			}
+		}
 	}
 
 	private FutureTask<Void> queueRenableTask;
@@ -160,8 +259,8 @@ class CalculatingWorker {
 			throw new IllegalArgumentException();
 		}
 
-		logger.debug("modifying var map on " + variable + " : [" + values[0]
-				+ "," + values[values.length - 1] + "]");
+		logger.trace("modifying var map on " + variable + " : [" + values[0] + ","
+				+ values[values.length - 1] + "]");
 		this.varMap.put(variable, values);
 
 		drawingQueue.removeAll(this.drawingQueue);
@@ -186,47 +285,8 @@ class CalculatingWorker {
 
 			});
 
-			schedueler.schedule(queueRenableTask, 4, TimeUnit.SECONDS);
+			schedueler.schedule(queueRenableTask, QUEUE_REENABLE_INTERVAL, TimeUnit.SECONDS);
 
-		}
-	}
-
-	private class Calculator implements Runnable {
-		@Override
-		public void run() {
-			while (calculate && !Thread.currentThread().isInterrupted()) {
-
-				final List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
-
-				synchronized (CalculatingWorker.this) {
-
-					varMap.put("t", new double[] { time });
-					for (FunctionEvaluator feval : evaluators) {
-
-						results.add(feval.calculate(varMap));
-
-					}
-				}
-				if (queueEnabled) {
-					try {
-						drawingQueue.put(new MatrixesMomentPair(time, results));
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
-				} else {
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							drawer.drawMatrixes(results);
-							form.setTime(time);
-
-						}
-					});
-				}
-
-				time += timeIncrement;
-
-			}
 		}
 	}
 
@@ -259,9 +319,8 @@ class CalculatingWorker {
 	}
 
 	private BlockingQueue<MatrixesMomentPair> drawingQueue = new LinkedBlockingQueue<MatrixesMomentPair>(
-			1000);
-	private ScheduledExecutorService schedueler = Executors
-			.newSingleThreadScheduledExecutor();
+			QUEUE_SIZE);
+	private ScheduledExecutorService schedueler = Executors.newSingleThreadScheduledExecutor();
 
 	private final LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
 

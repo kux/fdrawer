@@ -8,6 +8,7 @@ import java.util.ArrayList;
  * @author cucuioan
  * 
  * @param <T>
+ *            type contained in the matrix
  */
 public class Matrix<T> {
 
@@ -63,6 +64,10 @@ public class Matrix<T> {
 	 * @param indices
 	 *            coordinates from where to retrieve the element
 	 * @return element at the requested coordinates
+	 * @throws IndexOutOfBoundsException
+	 *             if more indices are supplied than the matrix's dimension or
+	 *             if one of the indices is greater or smaller than the size
+	 *             provided when the matrix was constructed
 	 */
 	public T getAt(int... indices) {
 		return vmatrix.get(getFlattenIndice(indices));
@@ -86,8 +91,7 @@ public class Matrix<T> {
 
 	private int getFlattenIndice(int... indices) {
 		if (indices.length != dimNo)
-			throw new IllegalArgumentException(
-					"Number of indices don't match matrix dimmension");
+			throw new IllegalArgumentException("Number of indices don't match matrix dimmension");
 
 		int flattenIndice = 0;
 		int fcoef = flatten;

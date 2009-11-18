@@ -13,6 +13,7 @@ options {
 }
 
 @lexer::members {
+	@Override
 	public void displayRecognitionError(String[] tokenNames,
 										RecognitionException e)
 	{
@@ -23,6 +24,7 @@ options {
 }
 
 @members {
+	@Override
 	public void displayRecognitionError(String[] tokenNames,
 										RecognitionException e)
 	{

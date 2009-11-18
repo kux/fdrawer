@@ -4,6 +4,12 @@ import java.util.List;
 
 import model.Matrix;
 
+/**
+ * interface to be implemented by components that are able to draw functions
+ * 
+ * @author kux
+ * 
+ */
 public interface DrawsFunctions {
 
 	/**
@@ -19,6 +25,5 @@ public interface DrawsFunctions {
 	 * 
 	 */
 	void drawMatrixes(List<Matrix<Double>> toDraw);
-	
-	
+
 }

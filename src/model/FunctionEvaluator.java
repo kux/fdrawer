@@ -16,13 +16,35 @@ import parser.ExprLexer;
 import parser.ExprParser;
 import parser.UncheckedParserException;
 
+/**
+ * wrapper over {@link parser.Eval}
+ * <p>
+ * usage example: <code>
+ * 
+ * FunctionEvaluator evaluator = new FunctionEvaluator("x * y"); // f(x,y) = x*y;
+ * 
+ * HashMap<String, double[]> variableMap = new HashMap<String, double[]>();
+ * variableMap.put("x", new double[]{3, 5});
+ * variableMap.put("y", new double[]{4, 6});
+ * 
+ * Matrix<Double> results = evaluator.calculate(variableMap);
+ * 
+ * assert results.getAt(0,0) == 12; // f(3,4) = 3*4 = 12
+ * assert results.getAt(0,1) == 18; // f(3,6) = 18
+ * assert results.getAt(1,0) == 20; // f(5,4) = 20
+ * assert results.getAt(1,1) == 30; // f(5,6) = 30
+ * 
+ * </code>
+ * 
+ * @author kux
+ * 
+ */
 public class FunctionEvaluator {
 
 	private final Eval evaluator;
 	private final String function;
 
-	public FunctionEvaluator(String function)
-			throws org.antlr.runtime.RecognitionException,
+	public FunctionEvaluator(String function) throws org.antlr.runtime.RecognitionException,
 			UncheckedParserException {
 
 		this.function = function;
@@ -40,6 +62,10 @@ public class FunctionEvaluator {
 		return function;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public Set<String> getVariables() {
 		try {
 			this.evaluator.reset();
@@ -54,20 +80,10 @@ public class FunctionEvaluator {
 	/**
 	 * 
 	 * @param varMap
-	 *            LinkedHashMap is used because when calling <code>keySet</code>
-	 *            or <code>values</code> I want to receive the contained
-	 *            keys/values in the same order in witch the client added them
-	 *            <p>
-	 *            Example:<br>
-	 *            <code>
-	 *            LinkedHashMap<String, double[]> vm = new LinkedHashMap<String, double[]>();
-	 *            vm.put("x", new double[]{1,2,3});
-	 *            vm.put("y", new double[]{0,1});
-	 *            Matrix<Double> m = functionEvaluator.calculate(vm);
-	 *            </code><br>
-	 *            m will be a bidimensional matrix of size 3x2<br>
-	 *            if a different Map type would have been used the matrix size
-	 *            might have been inverted.
+	 *            LinkedHashMap is used because the order it imposes on it's
+	 *            entries ( when iterating you receive the contained entries in
+	 *            the same order in that they were added )
+	 * 
 	 * 
 	 * 
 	 * @return matrix holding the calculation's result
@@ -86,9 +102,7 @@ public class FunctionEvaluator {
 
 			int j = 0;
 			for (String variable : variables) {
-				memory
-						.put(variable,
-								varMap.get(variable)[currentPozition[j++]]);
+				memory.put(variable, varMap.get(variable)[currentPozition[j++]]);
 
 			}
 
@@ -99,6 +113,7 @@ public class FunctionEvaluator {
 				rezultMatrix.setAtFlatIndex(Double.valueOf(rez), flatPoz);
 			} catch (RecognitionException e) {
 				// this can't be reached as the function was already parsed ??
+				assert true;
 			}
 
 		}

@@ -99,21 +99,18 @@ public class DrawingForm extends javax.swing.JFrame {
 				{
 					this.configPanel = new JPanel();
 					this.configPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-					BoxLayout configPanelLayout = new BoxLayout(configPanel,
-							BoxLayout.Y_AXIS);
+					BoxLayout configPanelLayout = new BoxLayout(configPanel, BoxLayout.Y_AXIS);
 
 					this.mainPanel.add(configPanel, BorderLayout.WEST);
 					this.configPanel.setLayout(configPanelLayout);
-					this.configPanel.setPreferredSize(new java.awt.Dimension(
-							270, 350));
+					this.configPanel.setPreferredSize(new java.awt.Dimension(270, 350));
 					{
 
 						JScrollPane functionScroll = new JScrollPane();
 						functionScroll.setPreferredSize(new Dimension(300, 99));
 						functionScroll.setMaximumSize(new Dimension(300, 99));
 
-						this.configPanel.add(Box.createRigidArea(new Dimension(
-								0, 10)));
+						this.configPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 						this.configPanel.add(functionScroll);
 
 						{
@@ -123,8 +120,7 @@ public class DrawingForm extends javax.swing.JFrame {
 							this.functionTable.setAlignmentX(CENTER_ALIGNMENT);
 							functionScroll.setViewportView(functionTable);
 							this.functionTable.setModel(functionTableModel);
-							this.functionTable.getColumnModel().getColumn(0)
-									.setPreferredWidth(220);
+							this.functionTable.getColumnModel().getColumn(0).setPreferredWidth(220);
 
 						}
 					}
@@ -132,8 +128,7 @@ public class DrawingForm extends javax.swing.JFrame {
 					{
 						JPanel precisionPanel = new JPanel();
 						precisionPanel.setMaximumSize(new Dimension(300, 30));
-						precisionPanel.setLayout(new BoxLayout(precisionPanel,
-								BoxLayout.X_AXIS));
+						precisionPanel.setLayout(new BoxLayout(precisionPanel, BoxLayout.X_AXIS));
 
 						precisionPanel.add(new JLabel("precision:"));
 
@@ -141,10 +136,8 @@ public class DrawingForm extends javax.swing.JFrame {
 						this.precisionSlider.setMinimum(15);
 						this.precisionSlider.setMaximum(30);
 						this.precisionSlider.setValue(20);
-						this.precisionSlider.setPreferredSize(new Dimension(
-								150, 20));
-						this.precisionSlider.setMaximumSize(new Dimension(90,
-								20));
+						this.precisionSlider.setPreferredSize(new Dimension(150, 20));
+						this.precisionSlider.setMaximumSize(new Dimension(90, 20));
 						precisionPanel.add(this.precisionSlider);
 						precisionPanel.add(Box.createHorizontalGlue());
 
@@ -154,8 +147,7 @@ public class DrawingForm extends javax.swing.JFrame {
 					{
 						JPanel timePanel = new JPanel();
 						timePanel.setMaximumSize(new Dimension(300, 30));
-						timePanel.setLayout(new BoxLayout(timePanel,
-								BoxLayout.X_AXIS));
+						timePanel.setLayout(new BoxLayout(timePanel, BoxLayout.X_AXIS));
 
 						this.timeLabel.setMinimumSize(new Dimension(70, 20));
 						this.timeLabel.setPreferredSize(new Dimension(70, 20));
@@ -164,14 +156,12 @@ public class DrawingForm extends javax.swing.JFrame {
 						timePanel.add(Box.createHorizontalGlue());
 
 						timePanel.add(this.resetButton);
-						this.resetButton
-								.setPreferredSize(new Dimension(80, 20));
+						this.resetButton.setPreferredSize(new Dimension(80, 20));
 						this.resetButton.setMaximumSize(new Dimension(80, 20));
 						timePanel.add(Box.createHorizontalGlue());
 
 						timePanel.add(this.pauseButton);
-						this.pauseButton
-								.setPreferredSize(new Dimension(90, 20));
+						this.pauseButton.setPreferredSize(new Dimension(90, 20));
 						this.pauseButton.setMaximumSize(new Dimension(90, 20));
 
 						this.configPanel.add(timePanel);
@@ -185,11 +175,10 @@ public class DrawingForm extends javax.swing.JFrame {
 					mainPanel.add(drawingPanel, BorderLayout.CENTER);
 					drawingPanel.setLayout(drawingPanelLayout);
 					{
-						functionDrawer
-								.setPreferredSize(new Dimension(500, 400));
+						functionDrawer.setPreferredSize(new Dimension(500, 400));
 						drawingPanel.add(functionDrawer, BorderLayout.CENTER);
-						functionDrawer.setBorder(new LineBorder(
-								new java.awt.Color(0, 0, 0), 1, false));
+						functionDrawer.setBorder(new LineBorder(new java.awt.Color(0, 0, 0), 1,
+								false));
 					}
 
 					JPanel drawingBottom = new JPanel();
@@ -274,26 +263,22 @@ public class DrawingForm extends javax.swing.JFrame {
 
 	private class DrawingTableModel extends AbstractTableModel {
 		private String[] columns = { "functions", "draw" };
-		private List<String> allowedVariables = Arrays.asList(new String[] {
-				"x", "y", "t" });
+		private List<String> allowedVariables = Arrays.asList(new String[] { "x", "y", "t" });
 
 		private Object[][] data = new Object[5][];
 
 		private DrawingTableModel() {
 			try {
-				data[0] = new Object[] {
-						new FunctionEvaluator("sin(x+t)+cos(y+t)"),
+				data[0] = new Object[] { new FunctionEvaluator("sin(x+t)+cos(y+t)"), Boolean.FALSE,
+						FDrawComponent.Type.DRAW3D };
+				data[1] = new Object[] { new FunctionEvaluator("sin(x+t/2)*pow(y,2)"),
 						Boolean.FALSE, FDrawComponent.Type.DRAW3D };
-				data[1] = new Object[] {
-						new FunctionEvaluator("sin(x+t/2)*pow(y,2)"),
-						Boolean.FALSE, FDrawComponent.Type.DRAW3D };
-				data[2] = new Object[] {
-						new FunctionEvaluator("cos(x+t/4)*pow(x,2)"),
+				data[2] = new Object[] { new FunctionEvaluator("cos(x+t/4)*pow(x,2)"),
 						Boolean.FALSE, FDrawComponent.Type.DRAW2D };
-				data[3] = new Object[] { new FunctionEvaluator("pow(x,2)"),
-						Boolean.FALSE, FDrawComponent.Type.DRAW2D };
-				data[4] = new Object[] { new FunctionEvaluator("-pow(x,2)"),
-						Boolean.FALSE, FDrawComponent.Type.DRAW2D };
+				data[3] = new Object[] { new FunctionEvaluator("pow(x,2)"), Boolean.FALSE,
+						FDrawComponent.Type.DRAW2D };
+				data[4] = new Object[] { new FunctionEvaluator("-pow(x,2)"), Boolean.FALSE,
+						FDrawComponent.Type.DRAW2D };
 			} catch (UncheckedParserException e) {
 				assert true;
 			} catch (RecognitionException e) {
@@ -348,8 +333,7 @@ public class DrawingForm extends javax.swing.JFrame {
 			if (col == 0) {
 				String function = (String) value;
 				try {
-					FunctionEvaluator evaluator = new FunctionEvaluator(
-							function);
+					FunctionEvaluator evaluator = new FunctionEvaluator(function);
 					Set<String> variables = evaluator.getVariables();
 					if (this.allowedVariables.containsAll(variables)) {
 						data[row][0] = evaluator;
@@ -362,18 +346,18 @@ public class DrawingForm extends javax.swing.JFrame {
 							setValueAt(Boolean.TRUE, row, 1);
 					} else {
 						JOptionPane.showMessageDialog(DrawingForm.this,
-								"Only x, y, and t variables are supported !",
-								"Error", JOptionPane.ERROR_MESSAGE);
+								"Only x, y, and t variables are supported !", "Error",
+								JOptionPane.ERROR_MESSAGE);
 					}
 
 					fireTableCellUpdated(row, col);
 
 				} catch (UncheckedParserException e) {
-					JOptionPane.showMessageDialog(DrawingForm.this, e
-							.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(DrawingForm.this, e.getMessage(), "Error",
+							JOptionPane.ERROR_MESSAGE);
 				} catch (RecognitionException e) {
-					JOptionPane.showMessageDialog(DrawingForm.this, e
-							.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(DrawingForm.this, e.getMessage(), "Error",
+							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 
@@ -414,7 +398,10 @@ public class DrawingForm extends javax.swing.JFrame {
 			boolean has3d = false;
 			for (int i = 0; i < data.length; ++i) {
 				if ((Boolean) data[i][1] == Boolean.TRUE) {
-					cworker.addFunction((FunctionEvaluator) data[i][0]);
+					List<FunctionEvaluator> existingEvaluators = cworker.getDrawnFunctions();
+					existingEvaluators.add((FunctionEvaluator) data[i][0]);
+					cworker.setDrawnFunctions(existingEvaluators);
+
 					if (data[i][2] == FDrawComponent.Type.DRAW3D)
 						has3d = true;
 					++drawn;
@@ -422,8 +409,8 @@ public class DrawingForm extends javax.swing.JFrame {
 			}
 
 			if (has3d) {
-				functionDrawer.set3dDrawingProperties(5,
-						new double[] { 0, 0, 0 }, get3dPrecision());
+				functionDrawer
+						.set3dDrawingProperties(5, new double[] { 0, 0, 0 }, get3dPrecision());
 			} else {
 				functionDrawer.set2dDrawingProperties(-5, 5, get2dPrecision());
 			}
@@ -439,8 +426,8 @@ public class DrawingForm extends javax.swing.JFrame {
 	}
 
 	public static void main(String[] args) {
-		PropertyConfigurator.configure(DrawingForm.class.getClassLoader()
-				.getResource("logging.properties"));
+		PropertyConfigurator.configure(DrawingForm.class.getClassLoader().getResource(
+				"logging.properties"));
 
 		logger.info("started");
 
