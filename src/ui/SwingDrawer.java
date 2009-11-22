@@ -31,6 +31,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
+import model.CalculatingWorker;
 import model.FunctionEvaluator;
 
 import org.antlr.runtime.RecognitionException;
@@ -40,9 +41,9 @@ import org.apache.log4j.PropertyConfigurator;
 import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
-public class DrawingForm extends javax.swing.JFrame {
+public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback {
 
-	private static Logger logger = Logger.getLogger(DrawingForm.class);
+	private static Logger logger = Logger.getLogger(SwingDrawer.class);
 
 	private CalculatingWorker cworker;
 
@@ -61,10 +62,11 @@ public class DrawingForm extends javax.swing.JFrame {
 
 	private NumberFormat nformatter = NumberFormat.getInstance();
 
-	public DrawingForm(String title) {
+	public SwingDrawer(String title) {
 		super(title);
-		this.cworker = new CalculatingWorker(this);
+		this.cworker = new CalculatingWorker();
 		this.functionDrawer = FDrawComponent.createInstance(cworker);
+		cworker.setFeedbackReceiver(this);
 		cworker.setDrawer(functionDrawer);
 		initGUI();
 		nformatter.setMaximumFractionDigits(1);
@@ -73,8 +75,17 @@ public class DrawingForm extends javax.swing.JFrame {
 
 	}
 
-	public void setTime(double time) {
-		this.timeLabel.setText("t = " + nformatter.format(time));
+	/**
+	 * 
+	 */
+	public void setTime(final double time) {
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				SwingDrawer.this.timeLabel.setText("t = " + nformatter.format(time));
+			}
+		});
 	}
 
 	public void setProgress(final int progress) {
@@ -218,11 +229,11 @@ public class DrawingForm extends javax.swing.JFrame {
 			public void actionPerformed(ActionEvent e) {
 				pauzed = !pauzed;
 				if (pauzed) {
-					DrawingForm.this.cworker.pause();
-					DrawingForm.this.pauseButton.setText("Resume");
+					SwingDrawer.this.cworker.pause();
+					SwingDrawer.this.pauseButton.setText("Resume");
 				} else {
-					DrawingForm.this.cworker.resume();
-					DrawingForm.this.pauseButton.setText("Pause");
+					SwingDrawer.this.cworker.resume();
+					SwingDrawer.this.pauseButton.setText("Pause");
 				}
 			}
 		});
@@ -231,7 +242,7 @@ public class DrawingForm extends javax.swing.JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				DrawingForm.this.cworker.setTime(0);
+				SwingDrawer.this.cworker.setTime(0);
 			}
 		});
 
@@ -240,9 +251,9 @@ public class DrawingForm extends javax.swing.JFrame {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
-					cworker.setQueueEnabled(true);
+					cworker.setRealTime(true);
 				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-					cworker.setQueueEnabled(false);
+					cworker.setRealTime(false);
 				}
 
 			}
@@ -345,7 +356,7 @@ public class DrawingForm extends javax.swing.JFrame {
 						if ((Boolean) data[row][1] == Boolean.TRUE)
 							setValueAt(Boolean.TRUE, row, 1);
 					} else {
-						JOptionPane.showMessageDialog(DrawingForm.this,
+						JOptionPane.showMessageDialog(SwingDrawer.this,
 								"Only x, y, and t variables are supported !", "Error",
 								JOptionPane.ERROR_MESSAGE);
 					}
@@ -353,10 +364,10 @@ public class DrawingForm extends javax.swing.JFrame {
 					fireTableCellUpdated(row, col);
 
 				} catch (UncheckedParserException e) {
-					JOptionPane.showMessageDialog(DrawingForm.this, e.getMessage(), "Error",
+					JOptionPane.showMessageDialog(SwingDrawer.this, e.getMessage(), "Error",
 							JOptionPane.ERROR_MESSAGE);
 				} catch (RecognitionException e) {
-					JOptionPane.showMessageDialog(DrawingForm.this, e.getMessage(), "Error",
+					JOptionPane.showMessageDialog(SwingDrawer.this, e.getMessage(), "Error",
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}
@@ -407,7 +418,7 @@ public class DrawingForm extends javax.swing.JFrame {
 					++drawn;
 				}
 			}
-
+			
 			if (has3d) {
 				functionDrawer
 						.set3dDrawingProperties(5, new double[] { 0, 0, 0 }, get3dPrecision());
@@ -426,14 +437,14 @@ public class DrawingForm extends javax.swing.JFrame {
 	}
 
 	public static void main(String[] args) {
-		PropertyConfigurator.configure(DrawingForm.class.getClassLoader().getResource(
+		PropertyConfigurator.configure(SwingDrawer.class.getClassLoader().getResource(
 				"logging.properties"));
 
 		logger.info("started");
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				DrawingForm inst = new DrawingForm("Simple math tool");
+				SwingDrawer inst = new SwingDrawer("Simple math tool");
 				inst.setLocationRelativeTo(null);
 				inst.setVisible(true);
 

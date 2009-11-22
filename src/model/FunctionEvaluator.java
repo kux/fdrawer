@@ -46,16 +46,30 @@ public class FunctionEvaluator {
 
 	public FunctionEvaluator(String function) throws org.antlr.runtime.RecognitionException,
 			UncheckedParserException {
-
 		this.function = function;
-		ANTLRStringStream input = new ANTLRStringStream(function);
-		ExprLexer lexer = new ExprLexer(input);
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		ExprParser parser = new ExprParser(tokens);
-		ExprParser.entry_return r = parser.entry();
-		CommonTree tree = (CommonTree) r.getTree();
-		BufferedTreeNodeStream bTree = new BufferedTreeNodeStream(tree);
-		evaluator = new Eval(bTree);
+		this.evaluator = new Eval(constructAst());
+	}
+
+	/**
+	 * copy constructor.
+	 * 
+	 * @param evaluator
+	 *            FunctionEvaluator to be copyed
+	 */
+	public FunctionEvaluator(FunctionEvaluator evaluator) {
+		this.function = evaluator.getFunction();
+		Eval eval = null;
+		try {
+			eval = new Eval(constructAst());
+		} catch (RecognitionException ignored) {
+			/*
+			 * this can't happen as the function was already checked when the
+			 * orignal object was first created
+			 */
+		} finally {
+			this.evaluator = eval;
+		}
+
 	}
 
 	public String getFunction() {
@@ -123,6 +137,16 @@ public class FunctionEvaluator {
 	@Override
 	public String toString() {
 		return function;
+	}
+
+	private BufferedTreeNodeStream constructAst() throws RecognitionException {
+		ANTLRStringStream input = new ANTLRStringStream(function);
+		ExprLexer lexer = new ExprLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		ExprParser parser = new ExprParser(tokens);
+		ExprParser.entry_return r = parser.entry();
+		CommonTree tree = (CommonTree) r.getTree();
+		return new BufferedTreeNodeStream(tree);
 	}
 
 	private int[] unflatten(int flatPoz, int flatSize, int[] sideSize) {

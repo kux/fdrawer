@@ -1,4 +1,4 @@
-package ui;
+package model;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,19 +13,18 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import javax.swing.SwingUtilities;
-
-import model.FunctionEvaluator;
-import model.Matrix;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
+
+import ui.DrawsFunctions;
+import ui.ReceivesFeedback;
 
 /**
  * class responsible for handling "data to be drawn" generation
  * <p>
- * calculated data is dispatched to the {@link DrawsFunctions} instance with that this
- * CalculatingWorker is configured through it's
+ * calculated data is dispatched to the {@link DrawsFunctions} instance with
+ * that this CalculatingWorker is configured through it's
  * {@link CalculatingWorker#setDrawer(DrawsFunctions)} method.
  * <p>
  * the function calculating is done in a calculating thread(
@@ -38,35 +37,30 @@ import org.apache.log4j.Logger;
  * solve this problem, all calculated values are placed on a queue (
  * {@link CalculatingWorker#drawingQueue}). While the queue size is below
  * <code>QUEUE_WAITING_THRESHOLD</code> the drawing is blocked. After this
- * threshold is passed, the drawing is unblocked by submitting 
+ * threshold is passed, the drawing is unblocked by submitting
  * {@link QueuePoller} to the {@link CalculatingWorker#schedueler()} executor
  * 
  * 
  * @author kux
  * 
  */
-class CalculatingWorker {
+public class CalculatingWorker {
 	private static Logger logger = Logger.getLogger(CalculatingWorker.class);
 
 	private final static int QUEUE_REENABLE_INTERVAL = 4;
 	private final static int QUEUE_SIZE = 100;
 	private final static int QUEUE_WAITING_THRESHOLD = 50;
 
-	public CalculatingWorker(DrawingForm form) {
-		this.form = form;
+	public CalculatingWorker() {
+		super();
 	}
 
-	/**
-	 * 
-	 * @param drawer
-	 * @throws IllegalStateException
-	 *             if not called from edt
-	 */
+	public void setFeedbackReceiver(ReceivesFeedback feedbackReceiver) {
+		this.feedbackReceiver.set(feedbackReceiver);
+	}
+
 	public void setDrawer(DrawsFunctions drawer) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			throw new IllegalStateException();
-		}
-		this.drawer = drawer;
+		this.drawer.set(drawer);
 	}
 
 	public void stop() {
@@ -91,11 +85,12 @@ class CalculatingWorker {
 	}
 
 	public synchronized List<FunctionEvaluator> getDrawnFunctions() {
-		return evaluators;
+		return deepCopyEvaluatorsList(this.evaluators);
 	}
 
 	/**
-	 * sets the function to be evaluated by this worker
+	 * sets the function to be evaluated by this worker. Except the t (time)
+	 * variable all functions must have the same variables
 	 * 
 	 * @param evaluators
 	 * @throws IllegalArgumentException
@@ -106,19 +101,20 @@ class CalculatingWorker {
 			return;
 
 		Set<String> allowedVariables = evaluators.get(0).getVariables();
+		allowedVariables.remove("t");
 
 		for (FunctionEvaluator eval : evaluators) {
 			Set<String> variables = eval.getVariables();
+			variables.remove("t");
 			if (!variables.equals(allowedVariables)) {
 				throw new IllegalArgumentException("functions with different variables provided");
 			}
 		}
 
 		this.drawingQueue.removeAll(this.drawingQueue);
-		this.evaluators = evaluators;
+		this.evaluators = deepCopyEvaluatorsList(evaluators);
 
 		removeAllVariablesFromMap();
-		allowedVariables.remove("t");
 		for (String variable : allowedVariables) {
 			varMap.put(variable, new double[] {});
 		}
@@ -138,16 +134,24 @@ class CalculatingWorker {
 		drawingQueue.removeAll(drawingQueue);
 	}
 
-	public boolean isQueueEnabled() {
-		return queueEnabled;
+	public boolean isRealTime() {
+		return realTime;
 	}
 
-	public void setQueueEnabled(boolean queueEnabled) {
+	public void setRealTime(boolean realTime) {
 		drawingQueue.removeAll(drawingQueue);
-		this.queueEnabled = queueEnabled;
+		this.realTime = realTime;
 	}
 
+	/**
+	 * @throws IllegalStateException
+	 *             if feedbackReceiver or drawer are not set
+	 */
 	public void start() {
+		if (feedbackReceiver == null || drawer == null) {
+			throw new IllegalStateException("drawer or feedbackreceiver are not set");
+		}
+
 		Thread calculator = new Thread(new Calculator(), "calculating thread");
 		calculator.start();
 		schedueler.scheduleAtFixedRate(new QueuePoller(), (long) (timeIncrement * 1000),
@@ -184,21 +188,16 @@ class CalculatingWorker {
 						calculatingTime = 0;
 					}
 
-					if (queueEnabled) {
+					if (realTime) {
 						try {
 							drawingQueue.put(new MatrixesMomentPair(time, results));
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
 						}
 					} else {
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								drawer.drawMatrixes(results);
-								form.setTime(time);
+						drawer.get().drawMatrixes(varMap, results);
+						feedbackReceiver.get().setTime(time);
 
-							}
-						});
 					}
 					time += timeIncrement;
 				}
@@ -210,17 +209,20 @@ class CalculatingWorker {
 
 		@Override
 		public void run() {
+
 			if (waiting && drawingQueue.size() > QUEUE_WAITING_THRESHOLD) {
 				logger.debug("switched waiting to FALSE, drawingQueue.size =  "
 						+ drawingQueue.size());
 				waiting = false;
-				form.setProgress(100);
+				feedbackReceiver.get().setProgress(100);
 			} else {
-				form.setProgress((int) (100.0 / QUEUE_WAITING_THRESHOLD * drawingQueue.size()));
+				feedbackReceiver.get().setProgress(
+						(int) (100.0 / QUEUE_WAITING_THRESHOLD * drawingQueue.size()));
 			}
 
 			if ((!waitingEnabled || !waiting) && !pauzed) {
 
+				logger.trace("polling matrix");
 				final MatrixesMomentPair toDraw = drawingQueue.poll();
 				if (toDraw == null) {
 					if (!waiting) {
@@ -228,15 +230,8 @@ class CalculatingWorker {
 						waiting = true;
 					}
 				} else {
-
-					SwingUtilities.invokeLater(new Runnable() {
-
-						@Override
-						public void run() {
-							drawer.drawMatrixes(toDraw.getMatrixes());
-							form.setTime(toDraw.getMoment());
-						}
-					});
+					drawer.get().drawMatrixes(varMap, toDraw.getMatrixes());
+					feedbackReceiver.get().setTime(toDraw.getMoment());
 				}
 			}
 		}
@@ -259,15 +254,15 @@ class CalculatingWorker {
 			throw new IllegalArgumentException();
 		}
 
-		logger.trace("modifying var map on " + variable + " : [" + values[0] + ","
+		logger.debug("modifying var map on " + variable + " : [" + values[0] + ","
 				+ values[values.length - 1] + "]");
 		this.varMap.put(variable, values);
 
 		drawingQueue.removeAll(this.drawingQueue);
 
 		if (waitingEnabled) {
+			logger.debug("waitingEnabled = FALSE");
 			waitingEnabled = false;
-			logger.debug("schedule queue re-enable");
 
 			// if scheduled before but not executed, cancel it
 			if (queueRenableTask != null && !queueRenableTask.isDone()) {
@@ -278,13 +273,14 @@ class CalculatingWorker {
 			queueRenableTask = new FutureTask<Void>(new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					logger.debug("queue reenabled");
+					logger.debug("waitingEnabled = TRUE");
 					CalculatingWorker.this.waitingEnabled = true;
 					return null;
 				}
 
 			});
 
+			logger.debug("schedule queue re-enable");
 			schedueler.schedule(queueRenableTask, QUEUE_REENABLE_INTERVAL, TimeUnit.SECONDS);
 
 		}
@@ -318,6 +314,14 @@ class CalculatingWorker {
 		}
 	}
 
+	private List<FunctionEvaluator> deepCopyEvaluatorsList(List<FunctionEvaluator> evaluators) {
+		List<FunctionEvaluator> copiedList = new ArrayList<FunctionEvaluator>();
+		for (FunctionEvaluator eval : evaluators) {
+			copiedList.add(new FunctionEvaluator(eval));
+		}
+		return copiedList;
+	}
+
 	private BlockingQueue<MatrixesMomentPair> drawingQueue = new LinkedBlockingQueue<MatrixesMomentPair>(
 			QUEUE_SIZE);
 	private ScheduledExecutorService schedueler = Executors.newSingleThreadScheduledExecutor();
@@ -328,12 +332,12 @@ class CalculatingWorker {
 	private volatile boolean calculate = true;
 	private volatile boolean pauzed;
 
-	private volatile boolean queueEnabled = true;
+	private volatile boolean realTime = true;
 
-	private double time = 0;
+	private volatile double time = 0;
 	private volatile double timeIncrement = 0.1;
 
-	private DrawsFunctions drawer;
-	private final DrawingForm form;
+	private final AtomicReference<DrawsFunctions> drawer = new AtomicReference<DrawsFunctions>();
+	private final AtomicReference<ReceivesFeedback> feedbackReceiver = new AtomicReference<ReceivesFeedback>();
 
 }

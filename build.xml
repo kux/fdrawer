@@ -118,7 +118,7 @@
 		<unzip src="${lib.dir}/log4j-1.2.15.jar" dest="${build.class.dir}" />
 		<jar destfile="${build.fprod}" basedir="${build.class.dir}" includes="**/*.class">
 			<manifest>
-				<attribute name="Main-Class" value="ui.DrawingForm" />
+				<attribute name="Main-Class" value="ui.SwingDrawer" />
 			</manifest>
 		</jar>
 	</target>

@@ -9,11 +9,14 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
 
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
+import model.CalculatingWorker;
 import model.Matrix;
 
 import org.apache.log4j.Logger;
@@ -103,11 +106,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		calculateXValues(xleft, xright, precision);
 
 		cworker.modifyVarMap("x", this.xvalues);
-	}
-
-	public void drawMatrixes(List<Matrix<Double>> toDraw) {
-		this.matrixesToDraw = toDraw;
-		repaint();
 	}
 
 	/**
@@ -367,6 +365,7 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 
 	private void draw2dGraphs(Graphics g) {
 
+		logger.trace("xvalues.length = " + xvalues.length);
 		double pixelRange = (xvalues[xvalues.length - 1] - xvalues[0]) / getWidth();
 
 		draw2dAxis(g, pixelRange);
@@ -562,6 +561,24 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 			this.x = -1;
 			this.y = -1;
 		}
+	}
+
+	@Override
+	public void drawMatrixes(final LinkedHashMap<String, double[]> variableMap,
+			final List<Matrix<Double>> toDraw) {
+
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				logger.trace("variableMap.get(x).length = " + variableMap.get("x").length);
+				xvalues = variableMap.get("x");
+				yvalues = variableMap.get("y");
+				FDrawComponent.this.matrixesToDraw = toDraw;
+				repaint();
+			}
+		});
+
 	}
 
 }

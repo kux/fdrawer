@@ -9,7 +9,7 @@ import org.antlr.runtime.RecognitionException;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class NewModelTest {
+public class FunctionEvaluatorTest {
 
 	@Test
 	public void design() throws RecognitionException {

@@ -1,5 +1,6 @@
 package ui;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import model.Matrix;
@@ -14,6 +15,8 @@ public interface DrawsFunctions {
 
 	/**
 	 * 
+	 * 
+	 * @param variableMap
 	 * @param toDraw
 	 *            each object in the list represents a function's values to be
 	 *            drawn stored in a {@link model.Matrix}
@@ -24,6 +27,6 @@ public interface DrawsFunctions {
 	 *            coordinates taken from the matrixes
 	 * 
 	 */
-	void drawMatrixes(List<Matrix<Double>> toDraw);
+	void drawMatrixes(LinkedHashMap<String, double[]> variableMap, List<Matrix<Double>> toDraw);
 
 }
