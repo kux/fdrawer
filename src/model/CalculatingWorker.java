@@ -58,8 +58,6 @@ public class CalculatingWorker {
 		this.feedbackReceiver.set(feedbackReceiver);
 	}
 
-
-
 	public void stop() {
 		this.calculate = false;
 	}
@@ -124,6 +122,7 @@ public class CalculatingWorker {
 		logger.debug("removing all drawin functions");
 		this.drawingQueue.removeAll(this.drawingQueue);
 		removeAllVariablesFromMap();
+		time = 0;
 		this.evaluators.removeAll(this.evaluators);
 	}
 
@@ -170,12 +169,12 @@ public class CalculatingWorker {
 
 					Date start = new Date();
 					varMap.put("t", new double[] { time });
+
 					for (FunctionEvaluator feval : evaluators) {
-
 						results.add(feval.calculate(varMap));
-
 					}
 					Date end = new Date();
+
 					calculatingTime += end.getTime() - start.getTime();
 					counter++;
 					if (counter % 100 == 0) {
@@ -184,20 +183,23 @@ public class CalculatingWorker {
 								+ " milliseconds");
 						calculatingTime = 0;
 					}
-
-					if (realTime) {
-						try {
-							drawingQueue.put(new MatrixesMomentPair(time, results));
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-						}
-					} else {
-						feedbackReceiver.get().drawMatrixes(varMap, results);
-						feedbackReceiver.get().setTime(time);
-
-					}
-					time += timeIncrement;
 				}
+				if (realTime) {
+					try {
+						logger.trace("adding calculated matrix, drawingQueue.size: "
+								+ drawingQueue.size());
+						drawingQueue.put(new MatrixesMomentPair(time, results));
+
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				} else {
+					feedbackReceiver.get().drawMatrixes(varMap, results);
+					feedbackReceiver.get().setTime(time);
+
+				}
+				time += timeIncrement;
+
 			}
 		}
 	}
@@ -217,6 +219,8 @@ public class CalculatingWorker {
 						(int) (100.0 / QUEUE_WAITING_THRESHOLD * drawingQueue.size()));
 			}
 
+			logger.trace("waitingEnabled " + waitingEnabled + " waiting " + waiting + " pauzed "
+					+ pauzed);
 			if ((!waitingEnabled || !waiting) && !pauzed) {
 
 				logger.trace("polling matrix");

@@ -411,6 +411,7 @@ public class SwingDrawer implements DrawingView {
 
 		private void requestDrawing() {
 			cworker.removeAllDrawnFunctions();
+			cworker.resume();
 
 			int drawn = 0;
 			boolean has3d = false;
@@ -436,8 +437,6 @@ public class SwingDrawer implements DrawingView {
 			if (drawn == 0) {
 				cworker.setTime(0);
 				cworker.pause();
-			} else {
-				cworker.resume();
 			}
 
 		}
