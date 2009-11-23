@@ -22,6 +22,9 @@ import model.Matrix;
 import org.apache.log4j.Logger;
 
 /**
+ * custom component with overridden <code>paintCompnent</code>, able to project
+ * and draw math functions
+ * 
  * //TODO extract some methods with code duplicated in draw3dGraphs and
  * draw2dGraphs, or make a hierarchy
  * 
@@ -29,7 +32,7 @@ import org.apache.log4j.Logger;
  * 
  */
 @SuppressWarnings("serial")
-public class FDrawComponent extends JLabel implements DrawsFunctions {
+public class FDrawComponent extends JLabel {
 	private static Logger logger = Logger.getLogger(FDrawComponent.class);
 
 	public enum Type {
@@ -563,7 +566,6 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		}
 	}
 
-	@Override
 	public void drawMatrixes(final LinkedHashMap<String, double[]> variableMap,
 			final List<Matrix<Double>> toDraw) {
 
@@ -580,5 +582,4 @@ public class FDrawComponent extends JLabel implements DrawsFunctions {
 		});
 
 	}
-
 }

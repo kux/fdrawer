@@ -17,8 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
 
-import ui.DrawsFunctions;
-import ui.ReceivesFeedback;
+import ui.DrawingView;
 
 /**
  * class responsible for handling "data to be drawn" generation
@@ -55,13 +54,11 @@ public class CalculatingWorker {
 		super();
 	}
 
-	public void setFeedbackReceiver(ReceivesFeedback feedbackReceiver) {
+	public void setFeedbackReceiver(DrawingView feedbackReceiver) {
 		this.feedbackReceiver.set(feedbackReceiver);
 	}
 
-	public void setDrawer(DrawsFunctions drawer) {
-		this.drawer.set(drawer);
-	}
+
 
 	public void stop() {
 		this.calculate = false;
@@ -148,7 +145,7 @@ public class CalculatingWorker {
 	 *             if feedbackReceiver or drawer are not set
 	 */
 	public void start() {
-		if (feedbackReceiver == null || drawer == null) {
+		if (feedbackReceiver == null) {
 			throw new IllegalStateException("drawer or feedbackreceiver are not set");
 		}
 
@@ -195,7 +192,7 @@ public class CalculatingWorker {
 							Thread.currentThread().interrupt();
 						}
 					} else {
-						drawer.get().drawMatrixes(varMap, results);
+						feedbackReceiver.get().drawMatrixes(varMap, results);
 						feedbackReceiver.get().setTime(time);
 
 					}
@@ -230,7 +227,7 @@ public class CalculatingWorker {
 						waiting = true;
 					}
 				} else {
-					drawer.get().drawMatrixes(varMap, toDraw.getMatrixes());
+					feedbackReceiver.get().drawMatrixes(varMap, toDraw.getMatrixes());
 					feedbackReceiver.get().setTime(toDraw.getMoment());
 				}
 			}
@@ -337,7 +334,6 @@ public class CalculatingWorker {
 	private volatile double time = 0;
 	private volatile double timeIncrement = 0.1;
 
-	private final AtomicReference<DrawsFunctions> drawer = new AtomicReference<DrawsFunctions>();
-	private final AtomicReference<ReceivesFeedback> feedbackReceiver = new AtomicReference<ReceivesFeedback>();
+	private final AtomicReference<DrawingView> feedbackReceiver = new AtomicReference<DrawingView>();
 
 }

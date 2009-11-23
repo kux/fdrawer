@@ -8,6 +8,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -15,6 +16,8 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -33,6 +36,7 @@ import javax.swing.table.TableModel;
 
 import model.CalculatingWorker;
 import model.FunctionEvaluator;
+import model.Matrix;
 
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
@@ -41,11 +45,13 @@ import org.apache.log4j.PropertyConfigurator;
 import parser.UncheckedParserException;
 
 @SuppressWarnings("serial")
-public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback {
+public class SwingDrawer implements DrawingView {
 
 	private static Logger logger = Logger.getLogger(SwingDrawer.class);
 
 	private CalculatingWorker cworker;
+
+	private JFrame applicationFrame;
 
 	private JPanel mainPanel;
 	private JPanel drawingPanel;
@@ -63,11 +69,10 @@ public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback 
 	private NumberFormat nformatter = NumberFormat.getInstance();
 
 	public SwingDrawer(String title) {
-		super(title);
+		applicationFrame = new JFrame(title);
 		this.cworker = new CalculatingWorker();
 		this.functionDrawer = FDrawComponent.createInstance(cworker);
 		cworker.setFeedbackReceiver(this);
-		cworker.setDrawer(functionDrawer);
 		initGUI();
 		nformatter.setMaximumFractionDigits(1);
 		nformatter.setMaximumIntegerDigits(4);
@@ -101,11 +106,11 @@ public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback 
 
 	private void initGUI() {
 		try {
-			setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			applicationFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			{
 				this.mainPanel = new JPanel();
 				BorderLayout mainPanelLayout = new BorderLayout();
-				this.getContentPane().add(mainPanel, BorderLayout.CENTER);
+				this.applicationFrame.getContentPane().add(mainPanel, BorderLayout.CENTER);
 				mainPanel.setLayout(mainPanelLayout);
 				{
 					this.configPanel = new JPanel();
@@ -128,7 +133,7 @@ public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback 
 
 							TableModel functionTableModel = new DrawingTableModel();
 							this.functionTable = new JTable();
-							this.functionTable.setAlignmentX(CENTER_ALIGNMENT);
+							this.functionTable.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 							functionScroll.setViewportView(functionTable);
 							this.functionTable.setModel(functionTableModel);
 							this.functionTable.getColumnModel().getColumn(0).setPreferredWidth(220);
@@ -204,7 +209,9 @@ public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback 
 					drawingPanel.add(drawingBottom, BorderLayout.SOUTH);
 				}
 			}
-			pack();
+			applicationFrame.pack();
+			applicationFrame.setVisible(true);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -356,7 +363,7 @@ public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback 
 						if ((Boolean) data[row][1] == Boolean.TRUE)
 							setValueAt(Boolean.TRUE, row, 1);
 					} else {
-						JOptionPane.showMessageDialog(SwingDrawer.this,
+						JOptionPane.showMessageDialog(applicationFrame,
 								"Only x, y, and t variables are supported !", "Error",
 								JOptionPane.ERROR_MESSAGE);
 					}
@@ -364,10 +371,10 @@ public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback 
 					fireTableCellUpdated(row, col);
 
 				} catch (UncheckedParserException e) {
-					JOptionPane.showMessageDialog(SwingDrawer.this, e.getMessage(), "Error",
+					JOptionPane.showMessageDialog(applicationFrame, e.getMessage(), "Error",
 							JOptionPane.ERROR_MESSAGE);
 				} catch (RecognitionException e) {
-					JOptionPane.showMessageDialog(SwingDrawer.this, e.getMessage(), "Error",
+					JOptionPane.showMessageDialog(applicationFrame, e.getMessage(), "Error",
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}
@@ -418,7 +425,7 @@ public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback 
 					++drawn;
 				}
 			}
-			
+
 			if (has3d) {
 				functionDrawer
 						.set3dDrawingProperties(5, new double[] { 0, 0, 0 }, get3dPrecision());
@@ -445,13 +452,18 @@ public class SwingDrawer extends javax.swing.JFrame implements ReceivesFeedback 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				SwingDrawer inst = new SwingDrawer("Simple math tool");
-				inst.setLocationRelativeTo(null);
-				inst.setVisible(true);
 
 				inst.associateListners();
 				inst.start();
 			}
 		});
+	}
+
+	@Override
+	public void drawMatrixes(LinkedHashMap<String, double[]> variableMap,
+			List<Matrix<Double>> toDraw) {
+		functionDrawer.drawMatrixes(variableMap, toDraw);
+
 	}
 
 }
