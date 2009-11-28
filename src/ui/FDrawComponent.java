@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -89,17 +91,22 @@ public class FDrawComponent extends JLabel {
 	 * @param rotation
 	 * @param precision
 	 */
-	public void set3dDrawingProperties(double distance, double[] rotation, int precision) {
+	public void set3dDrawingProperties(double distance, double[] rotation, final int precision) {
 		this.setType(Type.DRAW3D);
 
 		this.rotation = rotation;
 		this.distance = distance;
-
 		calculate3D();
 		splitIntervals(precision);
 
-		cworker.modifyVarMap("x", this.xvalues);
-		cworker.modifyVarMap("y", this.yvalues);
+		reqToModel.submit(new Runnable() {
+			@Override
+			public void run() {
+				cworker.modifyVarMap("x", xvalues);
+				cworker.modifyVarMap("y", yvalues);
+				cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+			}
+		});
 
 	}
 
@@ -107,8 +114,14 @@ public class FDrawComponent extends JLabel {
 		this.setType(Type.DRAW2D);
 
 		calculateXValues(xleft, xright, precision);
+		reqToModel.submit(new Runnable() {
+			@Override
+			public void run() {
+				cworker.modifyVarMap("x", xvalues);
+				cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+			}
+		});
 
-		cworker.modifyVarMap("x", this.xvalues);
 	}
 
 	/**
@@ -119,19 +132,31 @@ public class FDrawComponent extends JLabel {
 	 */
 	public void modifyPrecsion3d(int precision) {
 		if (type == Type.DRAW3D) {
+			logger.info("modifing 3d precision");
 			splitIntervals(precision);
+			reqToModel.submit(new Runnable() {
 
-			cworker.modifyVarMap("x", xvalues);
-			cworker.modifyVarMap("y", yvalues);
-			cworker.resetDrawingQueue();
+				@Override
+				public void run() {
+					cworker.modifyVarMap("x", xvalues);
+					cworker.modifyVarMap("y", yvalues);
+					cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+				}
+			});
 		}
 	}
 
 	public void modifyPrecsion2d(int precision) {
 		if (type == Type.DRAW2D) {
+			logger.info("modifing 2d precision");
 			calculateXValues(xvalues[0], xvalues[xvalues.length - 1], precision);
-			cworker.modifyVarMap("x", xvalues);
-			cworker.resetDrawingQueue();
+			reqToModel.submit(new Runnable() {
+				@Override
+				public void run() {
+					cworker.modifyVarMap("x", xvalues);
+					cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+				}
+			});
 		}
 	}
 
@@ -139,8 +164,15 @@ public class FDrawComponent extends JLabel {
 		this.distance = distance;
 		calculate3D();
 		splitIntervals(xvalues.length);
-		cworker.modifyVarMap("x", xvalues);
-		cworker.modifyVarMap("y", yvalues);
+		reqToModel.submit(new Runnable() {
+
+			@Override
+			public void run() {
+				cworker.modifyVarMap("x", xvalues);
+				cworker.modifyVarMap("y", yvalues);
+				cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+			}
+		});
 	}
 
 	private void calculate3D() {
@@ -164,23 +196,46 @@ public class FDrawComponent extends JLabel {
 		distance += distance / REDCOEF;
 		calculate3D();
 		splitIntervals(xvalues.length);
-		cworker.modifyVarMap("x", xvalues);
-		cworker.modifyVarMap("y", yvalues);
+		reqToModel.submit(new Runnable() {
+
+			@Override
+			public void run() {
+				cworker.modifyVarMap("x", xvalues);
+				cworker.modifyVarMap("y", yvalues);
+				cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+			}
+		});
+
 	}
 
 	private void zoomIn3d() {
 		distance -= distance / REDCOEF;
 		calculate3D();
 		splitIntervals(xvalues.length);
-		cworker.modifyVarMap("x", xvalues);
-		cworker.modifyVarMap("y", yvalues);
+		reqToModel.submit(new Runnable() {
+
+			@Override
+			public void run() {
+				cworker.modifyVarMap("x", xvalues);
+				cworker.modifyVarMap("y", yvalues);
+				cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+
+			}
+		});
+
 	}
 
 	private void zoomOut2d() {
 		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
 		calculateXValues(xvalues[0] - with, xvalues[xvalues.length - 1] + with, xvalues.length);
+		reqToModel.submit(new Runnable() {
 
-		cworker.modifyVarMap("x", xvalues);
+			@Override
+			public void run() {
+				cworker.modifyVarMap("x", xvalues);
+				cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+			}
+		});
 
 	}
 
@@ -188,7 +243,16 @@ public class FDrawComponent extends JLabel {
 
 		double with = (xvalues[xvalues.length - 1] - xvalues[0]) / REDCOEF;
 		calculateXValues(xvalues[0] + with, xvalues[xvalues.length - 1] - with, xvalues.length);
-		cworker.modifyVarMap("x", xvalues);
+		reqToModel.submit(new Runnable() {
+
+			@Override
+			public void run() {
+				cworker.modifyVarMap("x", xvalues);
+				cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+
+			}
+		});
+
 	}
 
 	/**
@@ -206,7 +270,16 @@ public class FDrawComponent extends JLabel {
 		ybottom += ywith;
 
 		calculateXValues(xvalues[0] - xwith, xvalues[xvalues.length - 1] - xwith, xvalues.length);
-		cworker.modifyVarMap("x", xvalues);
+		reqToModel.submit(new Runnable() {
+			
+			@Override
+			public void run() {
+				cworker.modifyVarMap("x", xvalues);
+				cworker.disableQueueForPeriod(REENABLE_INTERVAL);
+				
+			}
+		});
+		
 
 	}
 
@@ -451,6 +524,10 @@ public class FDrawComponent extends JLabel {
 	private int yPointer = -1;
 
 	private NumberFormat nformatter = NumberFormat.getInstance();
+
+	private static int REENABLE_INTERVAL = 4;
+
+	private ExecutorService reqToModel = Executors.newFixedThreadPool(10);
 
 	private interface DrawerMouseListener extends MouseWheelListener, MouseMotionListener,
 			MouseListener {

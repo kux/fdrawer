@@ -37,7 +37,7 @@ import ui.DrawingView;
  * {@link CalculatingWorker#drawingQueue}). While the queue size is below
  * <code>QUEUE_WAITING_THRESHOLD</code> the drawing is blocked. After this
  * threshold is passed, the drawing is unblocked by submitting
- * {@link QueuePoller} to the {@link CalculatingWorker#schedueler()} executor
+ * {@link QueuePoller} to an scheduled executor
  * 
  * 
  * @author kux
@@ -46,7 +46,6 @@ import ui.DrawingView;
 public class CalculatingWorker {
 	private static Logger logger = Logger.getLogger(CalculatingWorker.class);
 
-	private final static int QUEUE_REENABLE_INTERVAL = 4;
 	private final static int QUEUE_SIZE = 100;
 	private final static int QUEUE_WAITING_THRESHOLD = 50;
 
@@ -184,6 +183,8 @@ public class CalculatingWorker {
 						calculatingTime = 0;
 					}
 				}
+				Thread.yield();
+
 				if (realTime) {
 					try {
 						logger.trace("adding calculated matrix, drawingQueue.size: "
@@ -250,15 +251,21 @@ public class CalculatingWorker {
 	 *             if <code>values</code> is null or empty
 	 */
 	public synchronized void modifyVarMap(String variable, double[] values) {
-
 		if (values == null || values.length == 0) {
 			throw new IllegalArgumentException();
 		}
-
 		logger.debug("modifying var map on " + variable + " : [" + values[0] + ","
 				+ values[values.length - 1] + "]");
 		this.varMap.put(variable, values);
+	}
 
+	/**
+	 * clears the drawing queue and disables the waiting mechanism for
+	 * <code>period</code> seconds
+	 * 
+	 * @param period
+	 */
+	public synchronized void disableQueueForPeriod(int period) {
 		drawingQueue.removeAll(this.drawingQueue);
 
 		if (waitingEnabled) {
@@ -282,8 +289,7 @@ public class CalculatingWorker {
 			});
 
 			logger.debug("schedule queue re-enable");
-			schedueler.schedule(queueRenableTask, QUEUE_REENABLE_INTERVAL, TimeUnit.SECONDS);
-
+			schedueler.schedule(queueRenableTask, period, TimeUnit.SECONDS);
 		}
 	}
 
