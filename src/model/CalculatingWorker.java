@@ -53,8 +53,8 @@ public class CalculatingWorker {
 		super();
 	}
 
-	public void setFeedbackReceiver(DrawingView feedbackReceiver) {
-		this.feedbackReceiver.set(feedbackReceiver);
+	public void setDrawingView(DrawingView drawingView) {
+		this.drawingView.set(drawingView);
 	}
 
 	public void stop() {
@@ -143,7 +143,7 @@ public class CalculatingWorker {
 	 *             if feedbackReceiver or drawer are not set
 	 */
 	public void start() {
-		if (feedbackReceiver == null) {
+		if (drawingView == null) {
 			throw new IllegalStateException("drawer or feedbackreceiver are not set");
 		}
 
@@ -195,8 +195,8 @@ public class CalculatingWorker {
 						Thread.currentThread().interrupt();
 					}
 				} else {
-					feedbackReceiver.get().drawMatrixes(varMap, results);
-					feedbackReceiver.get().setTime(time);
+					drawingView.get().drawMatrixes(varMap, results);
+					drawingView.get().setTime(time);
 
 				}
 				time += timeIncrement;
@@ -214,9 +214,9 @@ public class CalculatingWorker {
 				logger.debug("switched waiting to FALSE, drawingQueue.size =  "
 						+ drawingQueue.size());
 				waiting = false;
-				feedbackReceiver.get().setProgress(100);
+				drawingView.get().setProgress(100);
 			} else {
-				feedbackReceiver.get().setProgress(
+				drawingView.get().setProgress(
 						(int) (100.0 / QUEUE_WAITING_THRESHOLD * drawingQueue.size()));
 			}
 
@@ -232,8 +232,8 @@ public class CalculatingWorker {
 						waiting = true;
 					}
 				} else {
-					feedbackReceiver.get().drawMatrixes(varMap, toDraw.getMatrixes());
-					feedbackReceiver.get().setTime(toDraw.getMoment());
+					drawingView.get().drawMatrixes(varMap, toDraw.getMatrixes());
+					drawingView.get().setTime(toDraw.getMoment());
 				}
 			}
 		}
@@ -344,6 +344,6 @@ public class CalculatingWorker {
 	private volatile double time = 0;
 	private volatile double timeIncrement = 0.1;
 
-	private final AtomicReference<DrawingView> feedbackReceiver = new AtomicReference<DrawingView>();
+	private final AtomicReference<DrawingView> drawingView = new AtomicReference<DrawingView>();
 
 }

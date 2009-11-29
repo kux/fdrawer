@@ -72,7 +72,7 @@ public class SwingDrawer implements DrawingView {
 		applicationFrame = new JFrame(title);
 		this.cworker = new CalculatingWorker();
 		this.functionDrawer = FDrawComponent.createInstance(cworker);
-		cworker.setFeedbackReceiver(this);
+		cworker.setDrawingView(this);
 		initGUI();
 		nformatter.setMaximumFractionDigits(1);
 		nformatter.setMaximumIntegerDigits(4);
