@@ -58,7 +58,7 @@ public class SwingDrawer implements DrawingView {
 	private JSlider precisionSlider;
 	private JTable functionTable;
 	private JPanel configPanel;
-	private FDrawComponent functionDrawer;
+	private DrawingCanvas functionDrawer;
 
 	private JLabel timeLabel = new JLabel("t = ");
 	private JButton pauseButton = new JButton("Pause");
@@ -71,7 +71,7 @@ public class SwingDrawer implements DrawingView {
 	public SwingDrawer(String title) {
 		applicationFrame = new JFrame(title);
 		this.cworker = new CalculatingWorker();
-		this.functionDrawer = FDrawComponent.createInstance(cworker);
+		this.functionDrawer = DrawingCanvas.createInstance(cworker);
 		cworker.setDrawingView(this);
 		initGUI();
 		nformatter.setMaximumFractionDigits(1);
@@ -222,7 +222,7 @@ public class SwingDrawer implements DrawingView {
 		this.precisionSlider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				if (functionDrawer.getType() == FDrawComponent.Type.DRAW3D)
+				if (functionDrawer.getType() == DrawingCanvas.Type.DRAW3D)
 					functionDrawer.modifyPrecsion3d(get3dPrecision());
 				else
 					functionDrawer.modifyPrecsion2d(get2dPrecision());
@@ -288,15 +288,15 @@ public class SwingDrawer implements DrawingView {
 		private DrawingTableModel() {
 			try {
 				data[0] = new Object[] { new FunctionEvaluator("sin(x+t)+cos(y+t)"), Boolean.FALSE,
-						FDrawComponent.Type.DRAW3D };
+						DrawingCanvas.Type.DRAW3D };
 				data[1] = new Object[] { new FunctionEvaluator("sin(x+t/2)*pow(y,2)"),
-						Boolean.FALSE, FDrawComponent.Type.DRAW3D };
+						Boolean.FALSE, DrawingCanvas.Type.DRAW3D };
 				data[2] = new Object[] { new FunctionEvaluator("cos(x+t/4)*pow(x,2)"),
-						Boolean.FALSE, FDrawComponent.Type.DRAW2D };
+						Boolean.FALSE, DrawingCanvas.Type.DRAW2D };
 				data[3] = new Object[] { new FunctionEvaluator("pow(x,2)"), Boolean.FALSE,
-						FDrawComponent.Type.DRAW2D };
+						DrawingCanvas.Type.DRAW2D };
 				data[4] = new Object[] { new FunctionEvaluator("-pow(x,2)"), Boolean.FALSE,
-						FDrawComponent.Type.DRAW2D };
+						DrawingCanvas.Type.DRAW2D };
 			} catch (UncheckedParserException e) {
 				assert true;
 			} catch (RecognitionException e) {
@@ -356,9 +356,9 @@ public class SwingDrawer implements DrawingView {
 					if (this.allowedVariables.containsAll(variables)) {
 						data[row][0] = evaluator;
 						if (variables.contains("x") && variables.contains("y")) {
-							data[row][2] = FDrawComponent.Type.DRAW3D;
+							data[row][2] = DrawingCanvas.Type.DRAW3D;
 						} else {
-							data[row][2] = FDrawComponent.Type.DRAW2D;
+							data[row][2] = DrawingCanvas.Type.DRAW2D;
 						}
 						if ((Boolean) data[row][1] == Boolean.TRUE)
 							setValueAt(Boolean.TRUE, row, 1);
@@ -381,7 +381,7 @@ public class SwingDrawer implements DrawingView {
 
 			if (col == 1) {
 				if (value == Boolean.TRUE) {
-					if (data[row][2] == FDrawComponent.Type.DRAW3D)
+					if (data[row][2] == DrawingCanvas.Type.DRAW3D)
 						unselectAll();
 					else
 						unsellectAll3d();
@@ -402,7 +402,7 @@ public class SwingDrawer implements DrawingView {
 
 		private void unsellectAll3d() {
 			for (int i = 0; i < data.length; ++i) {
-				if (data[i][2] == FDrawComponent.Type.DRAW3D) {
+				if (data[i][2] == DrawingCanvas.Type.DRAW3D) {
 					data[i][1] = Boolean.FALSE;
 					fireTableCellUpdated(i, 1);
 				}
@@ -421,7 +421,7 @@ public class SwingDrawer implements DrawingView {
 					existingEvaluators.add((FunctionEvaluator) data[i][0]);
 					cworker.setDrawnFunctions(existingEvaluators);
 
-					if (data[i][2] == FDrawComponent.Type.DRAW3D)
+					if (data[i][2] == DrawingCanvas.Type.DRAW3D)
 						has3d = true;
 					++drawn;
 				}

@@ -34,8 +34,8 @@ import org.apache.log4j.Logger;
  * 
  */
 @SuppressWarnings("serial")
-public class FDrawComponent extends JLabel {
-	private static Logger logger = Logger.getLogger(FDrawComponent.class);
+public class DrawingCanvas extends JLabel {
+	private static Logger logger = Logger.getLogger(DrawingCanvas.class);
 
 	public enum Type {
 		DRAW2D, DRAW3D
@@ -66,13 +66,13 @@ public class FDrawComponent extends JLabel {
 		return this.type;
 	}
 
-	private FDrawComponent(CalculatingWorker cworker) {
+	private DrawingCanvas(CalculatingWorker cworker) {
 		this.cworker = cworker;
 		nformatter.setMaximumFractionDigits(2);
 	}
 
-	public static FDrawComponent createInstance(CalculatingWorker cworker) {
-		FDrawComponent drawComponent = new FDrawComponent(cworker);
+	public static DrawingCanvas createInstance(CalculatingWorker cworker) {
+		DrawingCanvas drawComponent = new DrawingCanvas(cworker);
 		DrawerMouseListener dml = null;
 		dml = drawComponent.new DrawerMouseListener2d();
 
@@ -540,9 +540,9 @@ public class FDrawComponent extends JLabel {
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			int rotDir = e.getWheelRotation();
 			if (rotDir == 1)
-				FDrawComponent.this.zoomIn3d();
+				DrawingCanvas.this.zoomIn3d();
 			else
-				FDrawComponent.this.zoomOut3d();
+				DrawingCanvas.this.zoomOut3d();
 
 		}
 
@@ -553,7 +553,7 @@ public class FDrawComponent extends JLabel {
 			xPointer = e.getX();
 			yPointer = e.getY();
 			if (xant != -1 && yant != -1) {
-				FDrawComponent.this.modifAngles((double) (yPointer - yant) / 100,
+				DrawingCanvas.this.modifAngles((double) (yPointer - yant) / 100,
 						(double) (xPointer - xant) / 100);
 			}
 
@@ -583,8 +583,8 @@ public class FDrawComponent extends JLabel {
 
 		@Override
 		public void mouseReleased(MouseEvent arg0) {
-			FDrawComponent.this.xPointer = -1;
-			FDrawComponent.this.yPointer = -1;
+			DrawingCanvas.this.xPointer = -1;
+			DrawingCanvas.this.yPointer = -1;
 		}
 	}
 
@@ -653,7 +653,7 @@ public class FDrawComponent extends JLabel {
 				logger.trace("variableMap.get(x).length = " + variableMap.get("x").length);
 				xvalues = variableMap.get("x");
 				yvalues = variableMap.get("y");
-				FDrawComponent.this.matrixesToDraw = toDraw;
+				DrawingCanvas.this.matrixesToDraw = toDraw;
 				repaint();
 			}
 		});
