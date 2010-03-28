@@ -22,17 +22,17 @@ import ui.DrawingView;
 /**
  * class responsible for handling "data to be drawn" generation
  * <p>
- * calculated data is dispatched to the {@link DrawsFunctions} instance with
+ * calculated data is dispatched to the {@link DrawingView} instance with
  * that this CalculatingWorker is configured through it's
- * {@link CalculatingWorker#setDrawer(DrawsFunctions)} method.
+ * {@link CalculatingWorker#setDrawingView(DrawingView)} method.
  * <p>
- * the function calculating is done in a calculating thread(
+ * the function comuting is done in a calculating thread(
  * {@link Calculator#run()}<br>
  * 
- * the calculating worker may run in two modes: <br>
+ * the computing worker may run in two modes: <br>
  * 1. dispatch calculated matrixes for drawing as soon as they are ready <br>
  * 2. in real time drawing<br>
- * In this case the drawing can be faster than the calculating can be done. To
+ * In this case the drawing can be faster than the computing can be done. To
  * solve this problem, all calculated values are placed on a queue (
  * {@link CalculatingWorker#drawingQueue}). While the queue size is below
  * <code>QUEUE_WAITING_THRESHOLD</code> the drawing is blocked. After this
@@ -140,11 +140,11 @@ public class CalculatingWorker {
 
 	/**
 	 * @throws IllegalStateException
-	 *             if feedbackReceiver or drawer are not set
+	 *             if the drawingView is not set
 	 */
 	public void start() {
 		if (drawingView == null) {
-			throw new IllegalStateException("drawer or feedbackreceiver are not set");
+			throw new IllegalStateException("drawingView not set");
 		}
 
 		Thread calculator = new Thread(new Calculator(), "calculating thread");
@@ -174,6 +174,9 @@ public class CalculatingWorker {
 					}
 					Date end = new Date();
 
+					/*
+					 * do some statistics
+					 */
 					calculatingTime += end.getTime() - start.getTime();
 					counter++;
 					if (counter % 100 == 0) {
