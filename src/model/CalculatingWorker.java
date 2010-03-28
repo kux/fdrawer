@@ -26,7 +26,7 @@ import ui.DrawingView;
  * that this CalculatingWorker is configured through it's
  * {@link CalculatingWorker#setDrawingView(DrawingView)} method.
  * <p>
- * the function comuting is done in a calculating thread(
+ * the function computing is done in a calculating thread(
  * {@link Calculator#run()}<br>
  * 
  * the computing worker may run in two modes: <br>
