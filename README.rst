@@ -13,4 +13,5 @@ To run the app you need java jdk>=1.6 and ant.
 Just run: ::
 
     git clone git@github.com:kux/fdrawer.git
+    cd fdrawer
     ant run
