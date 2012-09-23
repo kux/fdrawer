@@ -43,6 +43,16 @@ public class FunctionEvaluator {
 
 	private final Eval evaluator;
 	private final String function;
+	
+	private BufferedTreeNodeStream constructAst() throws RecognitionException {
+		ANTLRStringStream input = new ANTLRStringStream(function);
+		ExprLexer lexer = new ExprLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		ExprParser parser = new ExprParser(tokens);
+		ExprParser.entry_return r = parser.entry();
+		CommonTree tree = (CommonTree) r.getTree();
+		return new BufferedTreeNodeStream(tree);
+	}
 
 	public FunctionEvaluator(String function) throws org.antlr.runtime.RecognitionException,
 			UncheckedParserException {
@@ -89,6 +99,31 @@ public class FunctionEvaluator {
 		Set<String> variables = this.evaluator.getUndefinedVariables();
 		this.evaluator.reset();
 		return variables;
+	}
+
+	private int[] unflatten(int flatPoz, int flatSize, int[] sideSize) {
+		int[] unflattenPoz = new int[sideSize.length];
+		for (int i = 0; i < sideSize.length; ++i) {
+			flatSize /= sideSize[i];
+			unflattenPoz[i] = flatPoz / flatSize;
+			flatPoz %= flatSize;
+		}
+		return unflattenPoz;
+	}
+
+	private int[] getSides(Collection<double[]> values) {
+		int[] sizes = new int[values.size()];
+		int i = 0;
+		for (double[] da : values)
+			sizes[i++] += da.length;
+		return sizes;
+	}
+
+	private int getMatrixSize(Collection<double[]> values) {
+		int sz = 1;
+		for (double[] da : values)
+			sz *= da.length;
+		return sz;
 	}
 
 	/**
@@ -139,39 +174,5 @@ public class FunctionEvaluator {
 		return function;
 	}
 
-	private BufferedTreeNodeStream constructAst() throws RecognitionException {
-		ANTLRStringStream input = new ANTLRStringStream(function);
-		ExprLexer lexer = new ExprLexer(input);
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		ExprParser parser = new ExprParser(tokens);
-		ExprParser.entry_return r = parser.entry();
-		CommonTree tree = (CommonTree) r.getTree();
-		return new BufferedTreeNodeStream(tree);
-	}
-
-	private int[] unflatten(int flatPoz, int flatSize, int[] sideSize) {
-		int[] unflattenPoz = new int[sideSize.length];
-		for (int i = 0; i < sideSize.length; ++i) {
-			flatSize /= sideSize[i];
-			unflattenPoz[i] = flatPoz / flatSize;
-			flatPoz %= flatSize;
-		}
-		return unflattenPoz;
-	}
-
-	private int[] getSides(Collection<double[]> values) {
-		int[] sizes = new int[values.size()];
-		int i = 0;
-		for (double[] da : values)
-			sizes[i++] += da.length;
-		return sizes;
-	}
-
-	private int getMatrixSize(Collection<double[]> values) {
-		int sz = 1;
-		for (double[] da : values)
-			sz *= da.length;
-		return sz;
-	}
 
 }

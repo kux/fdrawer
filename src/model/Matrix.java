@@ -17,6 +17,7 @@ public class Matrix<T> {
 	final private int[] matrixSize;
 	final private int dimNo;
 	final private int flatten;
+	
 
 	/**
 	 * the number of passed parameters defines number of dimensions the matrix
@@ -60,6 +61,22 @@ public class Matrix<T> {
 		return matrixSize;
 	}
 
+	private int getFlattenIndice(int... indices) {
+		if (indices.length != dimNo)
+			throw new IllegalArgumentException("Number of indices don't match matrix dimmension");
+
+		int flattenIndice = 0;
+		int fcoef = flatten;
+		for (int i = 0; i < indices.length; ++i) {
+			if (indices[i] > matrixSize[i] || indices[i] < 0)
+				throw new IndexOutOfBoundsException();
+
+			fcoef /= matrixSize[i];
+			flattenIndice += indices[i] * fcoef;
+		}
+		return flattenIndice;
+	}
+
 	/**
 	 * @param indices
 	 *            coordinates from where to retrieve the element
@@ -89,20 +106,5 @@ public class Matrix<T> {
 		vmatrix.set(flat, value);
 	}
 
-	private int getFlattenIndice(int... indices) {
-		if (indices.length != dimNo)
-			throw new IllegalArgumentException("Number of indices don't match matrix dimmension");
-
-		int flattenIndice = 0;
-		int fcoef = flatten;
-		for (int i = 0; i < indices.length; ++i) {
-			if (indices[i] > matrixSize[i] || indices[i] < 0)
-				throw new IndexOutOfBoundsException();
-
-			fcoef /= matrixSize[i];
-			flattenIndice += indices[i] * fcoef;
-		}
-		return flattenIndice;
-	}
 
 }

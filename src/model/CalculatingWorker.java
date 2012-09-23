@@ -44,10 +44,157 @@ import ui.DrawingView;
  * 
  */
 public class CalculatingWorker {
+	
 	private static Logger logger = Logger.getLogger(CalculatingWorker.class);
 
 	private final static int QUEUE_SIZE = 100;
 	private final static int QUEUE_WAITING_THRESHOLD = 50;
+	
+	private BlockingQueue<MatrixesMomentPair> drawingQueue = new LinkedBlockingQueue<MatrixesMomentPair>(
+			QUEUE_SIZE);
+	private ScheduledExecutorService schedueler = Executors.newSingleThreadScheduledExecutor();
+
+	private final LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
+
+	private List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
+	private final AtomicReference<DrawingView> drawingView = new AtomicReference<DrawingView>();
+
+	private volatile boolean calculate = true;
+	private volatile boolean pauzed;
+
+	private volatile boolean realTime = true;
+
+	private volatile double time = 0;
+	private volatile double timeIncrement = 0.1;
+	
+	private class Calculator implements Runnable {
+		@Override
+		public void run() {
+
+			int counter = 0;
+			long calculatingTime = 0;
+
+			while (calculate && !Thread.currentThread().isInterrupted()) {
+
+				final List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
+
+				synchronized (CalculatingWorker.this) {
+
+					Date start = new Date();
+					varMap.put("t", new double[] { time });
+
+					for (FunctionEvaluator feval : evaluators) {
+						results.add(feval.calculate(varMap));
+					}
+					Date end = new Date();
+
+					/*
+					 * do some statistics
+					 */
+					calculatingTime += end.getTime() - start.getTime();
+					counter++;
+					if (counter % 100 == 0) {
+						counter = 0;
+						logger.debug("average calculating time: " + (double) calculatingTime / 100
+								+ " milliseconds");
+						calculatingTime = 0;
+					}
+				}
+				Thread.yield();
+
+				if (realTime) {
+					try {
+						logger.trace("adding calculated matrix, drawingQueue.size: "
+								+ drawingQueue.size());
+						drawingQueue.put(new MatrixesMomentPair(time, results));
+
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				} else {
+					drawingView.get().drawMatrixes(varMap, results);
+					drawingView.get().setTime(time);
+
+				}
+				time += timeIncrement;
+
+			}
+		}
+	}
+	
+	private void removeAllVariablesFromMap() {
+		logger.debug("removing all variables from varMap");
+		Set<String> variables = new HashSet<String>(varMap.keySet());
+		for (String key : variables) {
+			varMap.remove(key);
+		}
+	}
+
+	private List<FunctionEvaluator> deepCopyEvaluatorsList(List<FunctionEvaluator> evaluators) {
+		List<FunctionEvaluator> copiedList = new ArrayList<FunctionEvaluator>();
+		for (FunctionEvaluator eval : evaluators) {
+			copiedList.add(new FunctionEvaluator(eval));
+		}
+		return copiedList;
+	}
+	
+	private class MatrixesMomentPair {
+		private double moment;
+		private List<Matrix<Double>> matrixes;
+
+		public MatrixesMomentPair(double moment, List<Matrix<Double>> matrixes) {
+			super();
+			this.moment = moment;
+			this.matrixes = matrixes;
+		}
+
+		public double getMoment() {
+			return moment;
+		}
+
+		public List<Matrix<Double>> getMatrixes() {
+			return matrixes;
+		}
+
+	}
+
+	private FutureTask<Void> queueRenableTask;
+	private volatile boolean waitingEnabled = true;
+	private volatile boolean waiting = true;
+
+	private class QueuePoller implements Runnable {
+
+		@Override
+		public void run() {
+
+			if (waiting && drawingQueue.size() > QUEUE_WAITING_THRESHOLD) {
+				logger.debug("switched waiting to FALSE, drawingQueue.size =  "
+						+ drawingQueue.size());
+				waiting = false;
+				drawingView.get().setProgress(100);
+			} else {
+				drawingView.get().setProgress(
+						(int) (100.0 / QUEUE_WAITING_THRESHOLD * drawingQueue.size()));
+			}
+
+			logger.trace("waitingEnabled " + waitingEnabled + " waiting " + waiting + " pauzed "
+					+ pauzed);
+			if ((!waitingEnabled || !waiting) && !pauzed) {
+
+				logger.trace("polling matrix");
+				final MatrixesMomentPair toDraw = drawingQueue.poll();
+				if (toDraw == null) {
+					if (!waiting) {
+						logger.debug("switched waiting to TRUE");
+						waiting = true;
+					}
+				} else {
+					drawingView.get().drawMatrixes(varMap, toDraw.getMatrixes());
+					drawingView.get().setTime(toDraw.getMoment());
+				}
+			}
+		}
+	}
 
 	public CalculatingWorker() {
 		super();
@@ -152,99 +299,7 @@ public class CalculatingWorker {
 		schedueler.scheduleAtFixedRate(new QueuePoller(), (long) (timeIncrement * 1000),
 				(long) (timeIncrement * 1000), TimeUnit.MILLISECONDS);
 	}
-
-	private class Calculator implements Runnable {
-		@Override
-		public void run() {
-
-			int counter = 0;
-			long calculatingTime = 0;
-
-			while (calculate && !Thread.currentThread().isInterrupted()) {
-
-				final List<Matrix<Double>> results = new ArrayList<Matrix<Double>>();
-
-				synchronized (CalculatingWorker.this) {
-
-					Date start = new Date();
-					varMap.put("t", new double[] { time });
-
-					for (FunctionEvaluator feval : evaluators) {
-						results.add(feval.calculate(varMap));
-					}
-					Date end = new Date();
-
-					/*
-					 * do some statistics
-					 */
-					calculatingTime += end.getTime() - start.getTime();
-					counter++;
-					if (counter % 100 == 0) {
-						counter = 0;
-						logger.debug("average calculating time: " + (double) calculatingTime / 100
-								+ " milliseconds");
-						calculatingTime = 0;
-					}
-				}
-				Thread.yield();
-
-				if (realTime) {
-					try {
-						logger.trace("adding calculated matrix, drawingQueue.size: "
-								+ drawingQueue.size());
-						drawingQueue.put(new MatrixesMomentPair(time, results));
-
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
-				} else {
-					drawingView.get().drawMatrixes(varMap, results);
-					drawingView.get().setTime(time);
-
-				}
-				time += timeIncrement;
-
-			}
-		}
-	}
-
-	private class QueuePoller implements Runnable {
-
-		@Override
-		public void run() {
-
-			if (waiting && drawingQueue.size() > QUEUE_WAITING_THRESHOLD) {
-				logger.debug("switched waiting to FALSE, drawingQueue.size =  "
-						+ drawingQueue.size());
-				waiting = false;
-				drawingView.get().setProgress(100);
-			} else {
-				drawingView.get().setProgress(
-						(int) (100.0 / QUEUE_WAITING_THRESHOLD * drawingQueue.size()));
-			}
-
-			logger.trace("waitingEnabled " + waitingEnabled + " waiting " + waiting + " pauzed "
-					+ pauzed);
-			if ((!waitingEnabled || !waiting) && !pauzed) {
-
-				logger.trace("polling matrix");
-				final MatrixesMomentPair toDraw = drawingQueue.poll();
-				if (toDraw == null) {
-					if (!waiting) {
-						logger.debug("switched waiting to TRUE");
-						waiting = true;
-					}
-				} else {
-					drawingView.get().drawMatrixes(varMap, toDraw.getMatrixes());
-					drawingView.get().setTime(toDraw.getMoment());
-				}
-			}
-		}
-	}
-
-	private FutureTask<Void> queueRenableTask;
-	private volatile boolean waitingEnabled = true;
-	private volatile boolean waiting = true;
+	
 
 	/**
 	 * 
@@ -295,58 +350,5 @@ public class CalculatingWorker {
 			schedueler.schedule(queueRenableTask, period, TimeUnit.SECONDS);
 		}
 	}
-
-	private class MatrixesMomentPair {
-		private double moment;
-		private List<Matrix<Double>> matrixes;
-
-		public MatrixesMomentPair(double moment, List<Matrix<Double>> matrixes) {
-			super();
-			this.moment = moment;
-			this.matrixes = matrixes;
-		}
-
-		public double getMoment() {
-			return moment;
-		}
-
-		public List<Matrix<Double>> getMatrixes() {
-			return matrixes;
-		}
-
-	}
-
-	private void removeAllVariablesFromMap() {
-		logger.debug("removing all variables from varMap");
-		Set<String> variables = new HashSet<String>(varMap.keySet());
-		for (String key : variables) {
-			varMap.remove(key);
-		}
-	}
-
-	private List<FunctionEvaluator> deepCopyEvaluatorsList(List<FunctionEvaluator> evaluators) {
-		List<FunctionEvaluator> copiedList = new ArrayList<FunctionEvaluator>();
-		for (FunctionEvaluator eval : evaluators) {
-			copiedList.add(new FunctionEvaluator(eval));
-		}
-		return copiedList;
-	}
-
-	private BlockingQueue<MatrixesMomentPair> drawingQueue = new LinkedBlockingQueue<MatrixesMomentPair>(
-			QUEUE_SIZE);
-	private ScheduledExecutorService schedueler = Executors.newSingleThreadScheduledExecutor();
-
-	private final LinkedHashMap<String, double[]> varMap = new LinkedHashMap<String, double[]>();
-
-	private List<FunctionEvaluator> evaluators = new ArrayList<FunctionEvaluator>();
-	private volatile boolean calculate = true;
-	private volatile boolean pauzed;
-
-	private volatile boolean realTime = true;
-
-	private volatile double time = 0;
-	private volatile double timeIncrement = 0.1;
-
-	private final AtomicReference<DrawingView> drawingView = new AtomicReference<DrawingView>();
 
 }
